@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-hub: #EC4899;
+  --color-real-estate: #3B82F6;
+  --color-regenerative: #10B981;
+  --color-authority: #F59E0B;
+  --color-philanthropy: #8B5CF6;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-cho-midnight text-white antialiased;
+  background-image:
+    radial-gradient(at 20% 30%, rgba(236, 72, 153, 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 20%, rgba(59, 130, 246, 0.06) 0px, transparent 50%),
+    radial-gradient(at 40% 80%, rgba(16, 185, 129, 0.06) 0px, transparent 50%),
+    radial-gradient(at 90% 70%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-cho-deep;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-cho-steel rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-cho-slate;
+}
+
+/* ReactFlow customizations */
+.react-flow__node {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.react-flow__node:hover {
+  z-index: 1000 !important;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__background {
+  background-color: transparent !important;
+}
+
+.react-flow__minimap {
+  @apply bg-cho-deep/80 backdrop-blur-sm rounded-lg border border-cho-steel/30 !important;
+}
+
+.react-flow__controls {
+  @apply bg-cho-deep/80 backdrop-blur-sm rounded-lg border border-cho-steel/30 !important;
+}
+
+.react-flow__controls-button {
+  @apply bg-cho-slate border-cho-steel/30 fill-white hover:bg-cho-steel !important;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+/* Glassmorphism utility */
+@layer utilities {
+  .glass {
+    @apply bg-cho-slate/30 backdrop-blur-xl border border-white/10;
+  }
+
+  .glass-dark {
+    @apply bg-cho-deep/70 backdrop-blur-xl border border-white/5;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r;
+  }
+
+  .glow-effect {
+    position: relative;
+  }
+
+  .glow-effect::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--glow-color, rgba(236, 72, 153, 0.5)), transparent, var(--glow-color, rgba(236, 72, 153, 0.5)));
+    filter: blur(15px);
+    opacity: 0.5;
+    z-index: -1;
+  }
+}
+
+/* Grid pattern background */
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Animated gradient border */
+@property --gradient-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.animated-border {
+  --gradient-angle: 0deg;
+  background: linear-gradient(var(--gradient-angle), #EC4899, #3B82F6, #10B981, #8B5CF6, #EC4899);
+  animation: rotate-gradient 4s linear infinite;
+}
+
+@keyframes rotate-gradient {
+  to {
+    --gradient-angle: 360deg;
+  }
+}
