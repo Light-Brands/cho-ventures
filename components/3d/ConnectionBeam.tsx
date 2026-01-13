@@ -1,0 +1,219 @@
+'use client';
+
+import { useRef, useMemo } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import { Connection, Entity, EntityCategory } from '@/lib/ecosystem-data';
+
+const categoryColors: Record<EntityCategory, string> = {
+  hub: '#A855F7',
+  'real-estate': '#3B82F6',
+  regenerative: '#14B8A6',
+  authority: '#0EA5E9',
+  philanthropy: '#6366F1',
+};
+
+interface ConnectionBeamProps {
+  connection: Connection;
+  sourceEntity: Entity;
+  targetEntity: Entity;
+  sourcePosition: [number, number, number];
+  targetPosition: [number, number, number];
+  isHighlighted: boolean;
+  isConnected: boolean;
+}
+
+// Custom shader for animated gradient line
+const beamVertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const beamFragmentShader = `
+  uniform vec3 color;
+  uniform float time;
+  uniform float opacity;
+  uniform float highlighted;
+  varying vec2 vUv;
+
+  void main() {
+    // Create animated flowing effect
+    float flow = fract(vUv.x * 3.0 - time * 0.5);
+    float pulse = smoothstep(0.0, 0.3, flow) * smoothstep(1.0, 0.7, flow);
+
+    // Fade at ends
+    float endFade = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
+
+    // Combine effects
+    float alpha = mix(0.3, 0.8, pulse * highlighted) * endFade * opacity;
+
+    gl_FragColor = vec4(color, alpha);
+  }
+`;
+
+export default function ConnectionBeam({
+  connection,
+  sourceEntity,
+  sourcePosition,
+  targetPosition,
+  isHighlighted,
+  isConnected,
+}: ConnectionBeamProps) {
+  const lineRef = useRef<THREE.Mesh>(null);
+  const particlesRef = useRef<THREE.Points>(null);
+
+  const color = new THREE.Color(categoryColors[sourceEntity.category]);
+  const isPrimary = connection.type === 'primary';
+  const isDataFlow = connection.type === 'data-flow';
+
+  // Create curved path
+  const { curve, tubeGeometry } = useMemo(() => {
+    const start = new THREE.Vector3(...sourcePosition);
+    const end = new THREE.Vector3(...targetPosition);
+
+    // Calculate midpoint with curve
+    const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+
+    // Add curve height based on distance
+    const distance = start.distanceTo(end);
+    const curveHeight = distance * 0.15;
+    mid.y += curveHeight;
+
+    // Create quadratic bezier curve
+    const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+
+    // Create tube geometry for the beam
+    const tubeGeometry = new THREE.TubeGeometry(
+      curve,
+      64, // segments
+      isPrimary ? 0.02 : 0.012, // radius
+      8, // radial segments
+      false
+    );
+
+    return { curve, tubeGeometry };
+  }, [sourcePosition, targetPosition, isPrimary]);
+
+  // Create particles along the curve
+  const particleGeometry = useMemo(() => {
+    const particleCount = isPrimary ? 30 : 15;
+    const positions = new Float32Array(particleCount * 3);
+    const sizes = new Float32Array(particleCount);
+    const offsets = new Float32Array(particleCount);
+
+    for (let i = 0; i < particleCount; i++) {
+      const t = i / particleCount;
+      const point = curve.getPoint(t);
+      positions[i * 3] = point.x;
+      positions[i * 3 + 1] = point.y;
+      positions[i * 3 + 2] = point.z;
+      sizes[i] = Math.random() * 0.03 + 0.02;
+      offsets[i] = Math.random();
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geometry.setAttribute('offset', new THREE.BufferAttribute(offsets, 1));
+
+    return geometry;
+  }, [curve, isPrimary]);
+
+  // Custom shader material for the beam
+  const beamMaterial = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        color: { value: color },
+        time: { value: 0 },
+        opacity: { value: isConnected ? 1 : 0.15 },
+        highlighted: { value: isHighlighted ? 1 : 0 },
+      },
+      vertexShader: beamVertexShader,
+      fragmentShader: beamFragmentShader,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+  }, [color, isConnected, isHighlighted]);
+
+  // Animate
+  useFrame((state, delta) => {
+    if (beamMaterial) {
+      beamMaterial.uniforms.time.value = state.clock.elapsedTime;
+
+      // Smooth transition for highlight state
+      const targetHighlight = isHighlighted ? 1 : 0;
+      beamMaterial.uniforms.highlighted.value = THREE.MathUtils.lerp(
+        beamMaterial.uniforms.highlighted.value,
+        targetHighlight,
+        delta * 5
+      );
+
+      // Smooth transition for opacity
+      const targetOpacity = isConnected ? (isHighlighted ? 1 : 0.4) : 0.1;
+      beamMaterial.uniforms.opacity.value = THREE.MathUtils.lerp(
+        beamMaterial.uniforms.opacity.value,
+        targetOpacity,
+        delta * 5
+      );
+    }
+
+    // Animate particles along curve
+    if (particlesRef.current && isHighlighted) {
+      const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+      const offsets = particlesRef.current.geometry.attributes.offset.array as Float32Array;
+      const time = state.clock.elapsedTime;
+
+      const particleCount = positions.length / 3;
+      for (let i = 0; i < particleCount; i++) {
+        // Move particle along curve
+        const t = (offsets[i] + time * 0.3) % 1;
+        const point = curve.getPoint(t);
+        positions[i * 3] = point.x;
+        positions[i * 3 + 1] = point.y;
+        positions[i * 3 + 2] = point.z;
+      }
+      particlesRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+  });
+
+  return (
+    <group>
+      {/* Main beam */}
+      <mesh ref={lineRef} geometry={tubeGeometry} material={beamMaterial} />
+
+      {/* Flowing particles - only show when highlighted */}
+      {isHighlighted && (
+        <points ref={particlesRef} geometry={particleGeometry}>
+          <pointsMaterial
+            color={color}
+            size={0.05}
+            transparent
+            opacity={0.8}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            sizeAttenuation
+          />
+        </points>
+      )}
+
+      {/* Data flow indicator - arrow particles for data-flow type */}
+      {isDataFlow && isHighlighted && (
+        <points geometry={particleGeometry}>
+          <pointsMaterial
+            color="#ffffff"
+            size={0.04}
+            transparent
+            opacity={0.6}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            sizeAttenuation
+          />
+        </points>
+      )}
+    </group>
+  );
+}

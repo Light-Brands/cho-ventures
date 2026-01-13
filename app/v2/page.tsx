@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { Network, Box } from 'lucide-react';
 import Link from 'next/link';
+import { Network, Box, LayoutGrid } from 'lucide-react';
 
 // Flickering code-style text reveal component
 function FlickeringText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -37,10 +37,11 @@ function FlickeringText({ text, delay = 0 }: { text: string; delay?: number }) {
   );
 }
 
-const EcosystemMap = dynamic(() => import('@/components/EcosystemMap'), {
+// Dynamic import for 3D component (client-side only)
+const EcosystemMap3D = dynamic(() => import('@/components/EcosystemMap3D'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center">
+    <div className="w-full h-full flex items-center justify-center bg-cho-midnight">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -57,19 +58,19 @@ const EcosystemMap = dynamic(() => import('@/components/EcosystemMap'), {
         />
         <div className="w-32 h-0.5 bg-white/10 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-white/30 rounded-full"
+            className="h-full bg-hub/50 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: '100%' }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
-        <FlickeringText text="COMMAND CENTER" delay={0.5} />
+        <FlickeringText text="INITIALIZING 3D" delay={0.5} />
       </motion.div>
     </div>
   ),
 });
 
-export default function Home() {
+export default function V2Page() {
   const [showIntro, setShowIntro] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -107,13 +108,13 @@ export default function Home() {
               />
               <div className="w-40 h-0.5 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-white/30 rounded-full"
+                  className="h-full bg-hub/50 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 />
               </div>
-              <FlickeringText text="COMMAND CENTER" delay={0.5} />
+              <FlickeringText text="COMMAND CENTER 3D" delay={0.5} />
             </motion.div>
           </motion.div>
         )}
@@ -146,26 +147,32 @@ export default function Home() {
               <span className="text-[11px] text-white/50">12 Entities</span>
             </div>
 
-            {/* Toggle to 3D version */}
-            <Link
-              href="/v2"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-hub/20 border border-hub/30 hover:bg-hub/30 transition-colors"
-            >
+            {/* Version indicator */}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-hub/20 border border-hub/30">
               <Box className="w-3 h-3 text-hub-light" />
               <span className="text-[11px] text-hub-light font-medium">3D</span>
+            </div>
+
+            {/* Toggle to 2D version */}
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cho-slate/30 border border-cho-steel/20 hover:bg-cho-slate/50 transition-colors"
+            >
+              <LayoutGrid className="w-3 h-3 text-white/40" />
+              <span className="text-[11px] text-white/40">2D</span>
             </Link>
           </div>
         </div>
       </motion.header>
 
-      {/* Map */}
+      {/* 3D Map */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: showIntro ? 2.4 : 0.1 }}
-        className="w-full h-full pt-14"
+        className="w-full h-full"
       >
-        {isLoaded && <EcosystemMap />}
+        {isLoaded && <EcosystemMap3D />}
       </motion.div>
     </main>
   );
