@@ -39,15 +39,39 @@ body {
 
 /* ReactFlow */
 .react-flow__node {
-  cursor: pointer;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  touch-action: none;
+}
+
+.react-flow__node * {
+  cursor: pointer !important;
 }
 
 .react-flow__node:hover {
   z-index: 1000 !important;
 }
 
+/* Remove draggable cursor since nodes aren't draggable */
+.react-flow__node-draggable {
+  cursor: pointer !important;
+}
+
+.react-flow__node-draggable.dragging {
+  cursor: pointer !important;
+}
+
+.react-flow__node-draggable * {
+  cursor: pointer !important;
+}
+
 .react-flow__background {
   background-color: transparent !important;
+  pointer-events: none;
+}
+
+.react-flow__pane {
+  cursor: default !important;
 }
 
 .react-flow__minimap {
@@ -63,6 +87,7 @@ body {
 .react-flow__controls-button {
   @apply bg-cho-slate border-cho-steel/20 !important;
   fill: rgba(255, 255, 255, 0.6) !important;
+  cursor: pointer;
 }
 
 .react-flow__controls-button:hover {
@@ -77,4 +102,18 @@ body {
 .react-flow__node.selected {
   outline: none !important;
   box-shadow: none !important;
+}
+
+/* Ensure handles don't block clicks */
+.react-flow__handle {
+  pointer-events: none !important;
+}
+
+/* Improve rendering performance */
+.react-flow__renderer {
+  will-change: transform;
+}
+
+.react-flow__edge {
+  pointer-events: none;
 }

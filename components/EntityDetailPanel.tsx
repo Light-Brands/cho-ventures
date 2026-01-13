@@ -95,13 +95,14 @@ export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanel
     .filter(Boolean) as Entity[];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 80 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 80 }}
-      transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-      className="absolute top-3 right-3 bottom-3 w-[360px] z-50"
-    >
+      <motion.div
+        initial={{ opacity: 0, x: 80 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 80 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+        className="absolute top-3 right-3 bottom-3 w-[360px] z-50 pointer-events-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
       <div className={`h-full bg-cho-deep/95 backdrop-blur-md rounded-xl overflow-hidden flex flex-col border ${styles.border}`}>
         {/* Header */}
         <div className={`relative px-5 pt-5 pb-6 bg-gradient-to-br ${styles.gradientFrom} to-transparent`}>

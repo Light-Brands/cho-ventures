@@ -3,18 +3,36 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
-import { Sparkles, Network } from 'lucide-react';
+import Image from 'next/image';
+import { Network } from 'lucide-react';
 
 const EcosystemMap = dynamic(() => import('@/components/EcosystemMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-hub/15 border border-hub/25 flex items-center justify-center">
-          <Sparkles className="w-6 h-6 text-hub-light animate-pulse" />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="flex flex-col items-center gap-4"
+      >
+        <Image
+          src="/logo.png"
+          alt="Cho Ventures"
+          width={200}
+          height={60}
+          className="opacity-80"
+          priority
+        />
+        <div className="w-32 h-0.5 bg-white/10 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full bg-white/30 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: '100%' }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          />
         </div>
-        <p className="text-white/30 text-xs">Loading...</p>
-      </div>
+      </motion.div>
     </div>
   ),
 });
@@ -37,55 +55,33 @@ export default function Home() {
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
             className="absolute inset-0 z-50 bg-cho-midnight flex items-center justify-center"
           >
-            <div className="text-center">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.5 }}
-                className="relative mb-6"
-              >
-                <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full bg-hub/20 blur-2xl" />
-                <div className="relative w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-hub/25 to-hub/10 border border-hub/40 flex items-center justify-center shadow-[0_0_40px_rgba(168,85,247,0.3)]">
-                  <Sparkles className="w-10 h-10 text-hub-light" />
-                </div>
-              </motion.div>
-
-              <motion.h1
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                className="text-3xl font-bold text-white mb-2"
-              >
-                Cho Ventures
-              </motion.h1>
-
-              <motion.p
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.4, delay: 0.35 }}
-                className="text-sm text-white/40"
-              >
-                Ecosystem Intelligence
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="flex items-center justify-center gap-1.5 mt-6"
-              >
-                {['bg-hub', 'bg-real-estate', 'bg-regenerative', 'bg-authority', 'bg-philanthropy'].map((color, i) => (
-                  <div
-                    key={color}
-                    className={`w-1 h-1 rounded-full ${color} animate-pulse`}
-                    style={{ animationDelay: `${i * 100}ms` }}
-                  />
-                ))}
-              </motion.div>
-            </div>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col items-center gap-4"
+            >
+              <Image
+                src="/logo.png"
+                alt="Cho Ventures"
+                width={240}
+                height={72}
+                className="opacity-90"
+                priority
+              />
+              <div className="w-40 h-0.5 bg-white/10 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-white/30 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -100,10 +96,14 @@ export default function Home() {
         <div className="flex items-center justify-between px-5 py-3">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-hub/20 to-hub/10 border border-hub/30 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-hub-light" />
-            </div>
-            <span className="text-sm font-medium text-white/90">Cho Ventures</span>
+            <Image
+              src="/logo.png"
+              alt="Cho Ventures"
+              width={120}
+              height={36}
+              className="opacity-90"
+              priority
+            />
           </div>
 
           {/* Stats */}

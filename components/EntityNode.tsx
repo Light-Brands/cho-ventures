@@ -25,7 +25,6 @@ interface EntityNodeProps {
     isSelected: boolean;
     isHovered: boolean;
     isConnected: boolean;
-    onHover: (id: string | null) => void;
   };
 }
 
@@ -89,17 +88,17 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 function EntityNode({ data }: EntityNodeProps) {
-  const { entity, isSelected, isHovered, isConnected, onHover } = data;
+  const { entity, isSelected, isHovered, isConnected } = data;
   const styles = categoryStyles[entity.category];
   const IconComponent = iconMap[entity.icon] || Sparkles;
   const isHub = entity.category === 'hub';
 
   return (
     <>
-      <Handle type="target" position={Position.Top} className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="source" position={Position.Bottom} className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="target" position={Position.Left} className="!bg-transparent !border-0 !w-0 !h-0" />
-      <Handle type="source" position={Position.Right} className="!bg-transparent !border-0 !w-0 !h-0" />
+      <Handle type="target" position={Position.Top} className="!bg-transparent !border-0 !w-0 !h-0 pointer-events-none" />
+      <Handle type="source" position={Position.Bottom} className="!bg-transparent !border-0 !w-0 !h-0 pointer-events-none" />
+      <Handle type="target" position={Position.Left} className="!bg-transparent !border-0 !w-0 !h-0 pointer-events-none" />
+      <Handle type="source" position={Position.Right} className="!bg-transparent !border-0 !w-0 !h-0 pointer-events-none" />
 
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -108,8 +107,6 @@ function EntityNode({ data }: EntityNodeProps) {
           opacity: isConnected ? 1 : 0.25,
         }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
-        onMouseEnter={() => onHover(entity.id)}
-        onMouseLeave={() => onHover(null)}
         className={`
           relative cursor-pointer select-none
           ${isHub ? 'w-44' : 'w-36'}
