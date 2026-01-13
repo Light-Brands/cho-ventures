@@ -2,12 +2,13 @@
 
 import { useState, useCallback, useMemo, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
+import { Environment } from '@react-three/drei';
 import { motion, AnimatePresence } from 'framer-motion';
 import { entities, connections, Entity, EntityCategory } from '@/lib/ecosystem-data';
 import EntitySphere from './3d/EntitySphere';
 import ConnectionBeam from './3d/ConnectionBeam';
 import CameraController from './3d/CameraController';
-import AmbientEffects, { BackgroundGlows } from './3d/AmbientEffects';
+import AmbientEffects from './3d/AmbientEffects';
 import Starfield from './3d/Starfield';
 import EntityDetailPanel from './EntityDetailPanel';
 
@@ -20,55 +21,53 @@ const categoryColorMap: Record<EntityCategory, string> = {
   philanthropy: '#6366F1',
 };
 
-// Calculate 3D positions - hub at center, others in orbital arrangement
+// Calculate 3D positions - hub at center, others uniformly distributed
 function calculate3DPositions(): Record<string, [number, number, number]> {
   const positions: Record<string, [number, number, number]> = {};
 
   // Hub at center
   positions['cho-ventures'] = [0, 0, 0];
 
-  // Group entities by category
-  const categoryEntities: Record<EntityCategory, Entity[]> = {
-    hub: [],
-    'real-estate': [],
-    regenerative: [],
-    authority: [],
-    philanthropy: [],
-  };
+  // Get all non-hub entities
+  const nonHubEntities = entities.filter((entity) => entity.id !== 'cho-ventures');
+  const entityCount = nonHubEntities.length;
 
-  entities.forEach((entity) => {
-    if (entity.id !== 'cho-ventures') {
-      categoryEntities[entity.category].push(entity);
+  if (entityCount === 0) return positions;
+
+  // Uniform radius for all entities
+  const baseRadius = 6.0;
+
+  // Use Fibonacci sphere algorithm for uniform distribution
+  // This creates evenly spaced points on a sphere
+  const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle in radians
+
+  nonHubEntities.forEach((entity, index) => {
+    // Handle single entity case
+    if (entityCount === 1) {
+      positions[entity.id] = [baseRadius, 0, 0];
+      return;
     }
-  });
 
-  // Position each category in a different sector
-  const categoryAngles: Record<EntityCategory, { start: number; radius: number; yOffset: number }> = {
-    hub: { start: 0, radius: 0, yOffset: 0 },
-    'real-estate': { start: 0, radius: 5, yOffset: 0.5 },
-    regenerative: { start: Math.PI * 0.5, radius: 5.5, yOffset: -0.3 },
-    authority: { start: Math.PI, radius: 5, yOffset: 0.2 },
-    philanthropy: { start: Math.PI * 1.5, radius: 5.5, yOffset: -0.5 },
-  };
-
-  Object.entries(categoryEntities).forEach(([category, ents]) => {
-    if (category === 'hub' || ents.length === 0) return;
-
-    const config = categoryAngles[category as EntityCategory];
-    const angleSpread = Math.PI * 0.4; // Spread entities within their sector
-    const startAngle = config.start - angleSpread / 2;
-    const angleStep = ents.length > 1 ? angleSpread / (ents.length - 1) : 0;
-
-    ents.forEach((entity, index) => {
-      const angle = ents.length === 1 ? config.start : startAngle + angleStep * index;
-      const radius = config.radius + (index % 2) * 0.8; // Slight radius variation
-
-      positions[entity.id] = [
-        Math.cos(angle) * radius,
-        config.yOffset + (index % 2 === 0 ? 0.3 : -0.3),
-        Math.sin(angle) * radius,
-      ];
-    });
+    // Calculate uniform spherical coordinates using Fibonacci sphere
+    const y = 1 - (index / (entityCount - 1)) * 2; // y goes from 1 to -1
+    const radiusAtY = Math.sqrt(1 - y * y); // Radius at y for sphere
+    
+    const theta = goldenAngle * index; // Golden angle increment
+    
+    // Convert to 3D position
+    const x = Math.cos(theta) * radiusAtY;
+    const z = Math.sin(theta) * radiusAtY;
+    
+    // Apply base radius with slight vertical flattening for better visibility
+    const verticalScale = 0.7; // Flatten sphere slightly for better view
+    const finalY = y * baseRadius * verticalScale;
+    const finalRadius = baseRadius * Math.sqrt(1 - y * y * (verticalScale * verticalScale));
+    
+    positions[entity.id] = [
+      x * finalRadius,
+      finalY,
+      z * finalRadius,
+    ];
   });
 
   return positions;
@@ -107,11 +106,32 @@ function Scene({
 
   return (
     <>
-      {/* Lighting */}
-      <ambientLight intensity={0.4} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#ffffff" />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#A855F7" />
-      <pointLight position={[0, 10, 0]} intensity={0.3} color="#3B82F6" />
+      {/* Enhanced realistic lighting setup */}
+      <ambientLight intensity={0.3} color="#1a1a2e" />
+      
+      {/* Main key light - warm white */}
+      <directionalLight
+        position={[10, 10, 5]}
+        intensity={0.8}
+        color="#ffffff"
+        castShadow={false}
+      />
+      
+      {/* Fill lights with category colors for atmosphere */}
+      <pointLight position={[10, 8, 10]} intensity={0.6} color="#A855F7" distance={20} decay={2} />
+      <pointLight position={[-10, 8, -10]} intensity={0.5} color="#3B82F6" distance={20} decay={2} />
+      <pointLight position={[0, 12, 0]} intensity={0.4} color="#14B8A6" distance={25} decay={2} />
+      <pointLight position={[-8, -5, 8]} intensity={0.3} color="#6366F1" distance={18} decay={2} />
+      
+      {/* Rim lighting for depth */}
+      <directionalLight
+        position={[-5, -5, -5]}
+        intensity={0.4}
+        color="#0EA5E9"
+      />
+      
+      {/* Environment for realistic reflections */}
+      <Environment preset="night" />
 
       {/* Camera controls */}
       <CameraController
@@ -120,9 +140,8 @@ function Scene({
       />
 
       {/* Background effects */}
-      <Starfield count={800} radius={45} />
-      <BackgroundGlows />
-      <AmbientEffects particleCount={150} />
+      <Starfield count={600} radius={45} />
+      <AmbientEffects particleCount={100} />
 
       {/* Connections */}
       {connections.map((connection) => {
@@ -270,19 +289,21 @@ export default function EcosystemMap3D() {
         </div>
       </motion.div>
 
-      {/* Controls hint */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[10px] text-white/30"
-      >
-        <span>Drag to rotate</span>
-        <span className="w-px h-3 bg-white/20" />
-        <span>Scroll to zoom</span>
-        <span className="w-px h-3 bg-white/20" />
-        <span>Click entity to focus</span>
-      </motion.div>
+      {/* Controls hint - fully centered at bottom */}
+      <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center pointer-events-none">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="flex items-center gap-4 text-[10px] text-white/40 font-medium whitespace-nowrap"
+        >
+          <span>Drag to rotate</span>
+          <span className="w-px h-3 bg-white/20" />
+          <span>Scroll to zoom</span>
+          <span className="w-px h-3 bg-white/20" />
+          <span>Click entity to focus</span>
+        </motion.div>
+      </div>
     </div>
   );
 }

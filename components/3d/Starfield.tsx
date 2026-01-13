@@ -18,42 +18,88 @@ export default function Starfield({ count = 1000, radius = 50 }: StarfieldProps)
     const sizes = new Float32Array(count);
     const velocities: number[] = [];
 
-    // Star colors - mostly white/blue with occasional warm tones
+    // More realistic star colors based on stellar classification
     const starColors = [
-      new THREE.Color('#ffffff'),
-      new THREE.Color('#E8F4FF'),
-      new THREE.Color('#D4E4FF'),
-      new THREE.Color('#FFE4D4'),
-      new THREE.Color('#C084FC'), // Purple accent
-      new THREE.Color('#60A5FA'), // Blue accent
+      // O-type (blue-white, hot) - rare
+      { color: new THREE.Color('#9BB0FF'), weight: 0.03 },
+      // B-type (blue-white) - rare
+      { color: new THREE.Color('#AABFFF'), weight: 0.05 },
+      // A-type (white) - common
+      { color: new THREE.Color('#CAD7FF'), weight: 0.15 },
+      // F-type (yellow-white) - common
+      { color: new THREE.Color('#F8F7FF'), weight: 0.2 },
+      // G-type (yellow) - like our sun
+      { color: new THREE.Color('#FFF4EA'), weight: 0.25 },
+      // K-type (orange) - very common
+      { color: new THREE.Color('#FFD2A1'), weight: 0.2 },
+      // M-type (red) - most common
+      { color: new THREE.Color('#FFCC6F'), weight: 0.12 },
     ];
 
+    // Create cumulative weights for realistic distribution
+    const cumulativeWeights: number[] = [];
+    let sum = 0;
+    starColors.forEach(({ weight }) => {
+      sum += weight;
+      cumulativeWeights.push(sum);
+    });
+
     for (let i = 0; i < count; i++) {
-      // Distribute stars in a sphere shell
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos((Math.random() * 2) - 1);
-      const r = radius + (Math.random() - 0.5) * 20;
+      // More realistic distribution - denser in some areas (like Milky Way band)
+      const isMilkyWay = Math.random() < 0.3;
+      
+      if (isMilkyWay) {
+        // Dense band around equator (like Milky Way)
+        const theta = Math.random() * Math.PI * 2;
+        const phi = (Math.random() - 0.5) * Math.PI * 0.3 + Math.PI / 2;
+        const r = radius + (Math.random() - 0.5) * 15;
+        
+        positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+        positions[i * 3 + 2] = r * Math.cos(phi);
+      } else {
+        // Scattered throughout space
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos((Math.random() * 2) - 1);
+        const r = radius + (Math.random() - 0.5) * 25;
+        
+        positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+        positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+        positions[i * 3 + 2] = r * Math.cos(phi);
+      }
 
-      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = r * Math.cos(phi);
+      // Select color based on weighted distribution
+      const rand = Math.random();
+      let selectedColor = starColors[0].color;
+      for (let j = 0; j < cumulativeWeights.length; j++) {
+        if (rand <= cumulativeWeights[j]) {
+          selectedColor = starColors[j].color;
+          break;
+        }
+      }
+      
+      colors[i * 3] = selectedColor.r;
+      colors[i * 3 + 1] = selectedColor.g;
+      colors[i * 3 + 2] = selectedColor.b;
 
-      // Mostly white/blue stars
-      const colorIndex = Math.random() > 0.95
-        ? Math.floor(Math.random() * 6)
-        : Math.floor(Math.random() * 3);
-      const color = starColors[colorIndex];
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
+      // More realistic size distribution - most stars are small
+      const sizeRoll = Math.random();
+      if (sizeRoll > 0.98) {
+        // Very large stars (rare)
+        sizes[i] = Math.random() * 0.2 + 0.15;
+      } else if (sizeRoll > 0.90) {
+        // Large stars
+        sizes[i] = Math.random() * 0.1 + 0.08;
+      } else if (sizeRoll > 0.7) {
+        // Medium stars
+        sizes[i] = Math.random() * 0.06 + 0.04;
+      } else {
+        // Small stars (most common)
+        sizes[i] = Math.random() * 0.03 + 0.01;
+      }
 
-      // Varying sizes - mostly small with some larger stars
-      sizes[i] = Math.random() > 0.98
-        ? Math.random() * 0.15 + 0.1
-        : Math.random() * 0.06 + 0.01;
-
-      // Twinkling speed
-      velocities.push(Math.random() * 2 + 0.5);
+      // Varied twinkling speeds
+      velocities.push(Math.random() * 3 + 0.5);
     }
 
     const geometry = new THREE.BufferGeometry();
@@ -67,18 +113,23 @@ export default function Starfield({ count = 1000, radius = 50 }: StarfieldProps)
   useFrame((state) => {
     if (!pointsRef.current) return;
 
-    // Slow rotation
-    pointsRef.current.rotation.y = state.clock.elapsedTime * 0.01;
-    pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.005) * 0.02;
+    // Very slow rotation for parallax effect
+    pointsRef.current.rotation.y = state.clock.elapsedTime * 0.005;
+    pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.003) * 0.01;
 
-    // Twinkling effect
+    // Realistic twinkling - atmospheric scintillation effect
     const sizes = pointsRef.current.geometry.attributes.size.array as Float32Array;
+    const originalSizes = geometry.attributes.size.array as Float32Array;
     const time = state.clock.elapsedTime;
 
     for (let i = 0; i < count; i++) {
-      const baseSize = (i % 50 === 0) ? 0.12 : 0.04;
-      const twinkle = Math.sin(time * velocities[i] + i) * 0.5 + 0.5;
-      sizes[i] = baseSize * (0.5 + twinkle * 0.5);
+      const baseSize = originalSizes[i];
+      // Multiple frequency twinkling for realism
+      const twinkle1 = Math.sin(time * velocities[i] + i) * 0.5 + 0.5;
+      const twinkle2 = Math.sin(time * velocities[i] * 1.7 + i * 2.3) * 0.3 + 0.7;
+      const combinedTwinkle = twinkle1 * twinkle2;
+      
+      sizes[i] = baseSize * (0.6 + combinedTwinkle * 0.4);
     }
     pointsRef.current.geometry.attributes.size.needsUpdate = true;
   });
@@ -89,9 +140,10 @@ export default function Starfield({ count = 1000, radius = 50 }: StarfieldProps)
         size={0.05}
         vertexColors
         transparent
-        opacity={0.8}
+        opacity={0.9}
         depthWrite={false}
         sizeAttenuation
+        blending={THREE.AdditiveBlending}
       />
     </points>
   );

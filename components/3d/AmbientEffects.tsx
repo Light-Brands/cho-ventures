@@ -11,12 +11,13 @@ interface AmbientEffectsProps {
 export default function AmbientEffects({ particleCount = 200 }: AmbientEffectsProps) {
   const particlesRef = useRef<THREE.Points>(null);
 
-  // Create particle geometry
-  const { geometry, velocities } = useMemo(() => {
+  // Create particle geometry with depth layers
+  const { geometry, velocities, layers } = useMemo(() => {
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
     const sizes = new Float32Array(particleCount);
     const velocities: THREE.Vector3[] = [];
+    const layers: number[] = [];
 
     const categoryColors = [
       new THREE.Color('#A855F7'), // hub
@@ -27,8 +28,17 @@ export default function AmbientEffects({ particleCount = 200 }: AmbientEffectsPr
     ];
 
     for (let i = 0; i < particleCount; i++) {
-      // Random position in a sphere
-      const radius = 15 + Math.random() * 10;
+      // Create depth layers for atmospheric effect
+      const layer = Math.random();
+      layers.push(layer);
+      
+      // Closer particles are larger and brighter
+      const depthFactor = Math.pow(layer, 0.5);
+      const minRadius = 8 + depthFactor * 5;
+      const maxRadius = 12 + depthFactor * 15;
+      
+      // Random position in layered sphere
+      const radius = minRadius + Math.random() * (maxRadius - minRadius);
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos((Math.random() * 2) - 1);
 
@@ -36,21 +46,24 @@ export default function AmbientEffects({ particleCount = 200 }: AmbientEffectsPr
       positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = radius * Math.cos(phi);
 
-      // Random color from category palette
+      // Color with depth fade
       const color = categoryColors[Math.floor(Math.random() * categoryColors.length)];
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
+      const fade = 0.5 + depthFactor * 0.5;
+      colors[i * 3] = color.r * fade;
+      colors[i * 3 + 1] = color.g * fade;
+      colors[i * 3 + 2] = color.b * fade;
 
-      // Random size
-      sizes[i] = Math.random() * 0.08 + 0.02;
+      // Size based on depth - closer = larger
+      const baseSize = 0.03 + Math.random() * 0.08;
+      sizes[i] = baseSize * (0.4 + depthFactor * 0.6);
 
-      // Random velocity for drifting
+      // Velocity based on depth - closer particles move slower (parallax)
+      const speed = 0.005 * (1.5 - depthFactor);
       velocities.push(
         new THREE.Vector3(
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01
+          (Math.random() - 0.5) * speed,
+          (Math.random() - 0.5) * speed,
+          (Math.random() - 0.5) * speed
         )
       );
     }
@@ -60,32 +73,40 @@ export default function AmbientEffects({ particleCount = 200 }: AmbientEffectsPr
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
 
-    return { geometry, velocities };
+    return { geometry, velocities, layers };
   }, [particleCount]);
 
-  // Animate particles
+  // Animate particles with depth-based parallax
   useFrame((state) => {
     if (!particlesRef.current) return;
 
     const positions = particlesRef.current.geometry.attributes.position.array as Float32Array;
+    const sizes = particlesRef.current.geometry.attributes.size.array as Float32Array;
+    const originalSizes = geometry.attributes.size.array as Float32Array;
     const time = state.clock.elapsedTime;
 
     for (let i = 0; i < particleCount; i++) {
-      // Slow drift with slight sine wave motion
-      positions[i * 3] += velocities[i].x + Math.sin(time * 0.5 + i) * 0.001;
-      positions[i * 3 + 1] += velocities[i].y + Math.cos(time * 0.3 + i) * 0.001;
-      positions[i * 3 + 2] += velocities[i].z + Math.sin(time * 0.4 + i) * 0.001;
+      // Slow drift with depth-based parallax
+      const depthFactor = layers[i];
+      const swaySpeed = 0.3 + depthFactor * 0.5;
+      
+      positions[i * 3] += velocities[i].x + Math.sin(time * swaySpeed + i) * 0.0008;
+      positions[i * 3 + 1] += velocities[i].y + Math.cos(time * swaySpeed * 0.7 + i) * 0.0008;
+      positions[i * 3 + 2] += velocities[i].z + Math.sin(time * swaySpeed * 0.5 + i) * 0.0008;
 
-      // Wrap around bounds
+      // Wrap around bounds with depth-appropriate radius
       const radius = Math.sqrt(
         positions[i * 3] ** 2 +
         positions[i * 3 + 1] ** 2 +
         positions[i * 3 + 2] ** 2
       );
 
-      if (radius > 25 || radius < 10) {
-        // Reset to random position
-        const newRadius = 15 + Math.random() * 5;
+      const minRadius = 8 + Math.pow(depthFactor, 0.5) * 5;
+      const maxRadius = 12 + Math.pow(depthFactor, 0.5) * 15;
+
+      if (radius > maxRadius || radius < minRadius) {
+        // Reset to random position in layer
+        const newRadius = minRadius + Math.random() * (maxRadius - minRadius);
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos((Math.random() * 2) - 1);
 
@@ -93,12 +114,18 @@ export default function AmbientEffects({ particleCount = 200 }: AmbientEffectsPr
         positions[i * 3 + 1] = newRadius * Math.sin(phi) * Math.sin(theta);
         positions[i * 3 + 2] = newRadius * Math.cos(phi);
       }
+      
+      // Pulsing effect based on depth
+      const pulse = Math.sin(time * (0.5 + depthFactor) + i * 0.5) * 0.5 + 0.5;
+      sizes[i] = originalSizes[i] * (0.8 + pulse * 0.2);
     }
 
     particlesRef.current.geometry.attributes.position.needsUpdate = true;
+    particlesRef.current.geometry.attributes.size.needsUpdate = true;
 
-    // Slow rotation of entire particle field
-    particlesRef.current.rotation.y = time * 0.02;
+    // Gentle rotation for depth effect
+    particlesRef.current.rotation.y = time * 0.015;
+    particlesRef.current.rotation.x = Math.sin(time * 0.008) * 0.05;
   });
 
   return (
@@ -107,7 +134,7 @@ export default function AmbientEffects({ particleCount = 200 }: AmbientEffectsPr
         size={0.05}
         vertexColors
         transparent
-        opacity={0.4}
+        opacity={0.5}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
         sizeAttenuation

@@ -61,13 +61,22 @@ export default function CameraController({
 
       // Lerp target
       controlsRef.current.target.lerpVectors(startTarget.current, targetVec, t);
+    } else if (!targetPosition) {
+      // Lock target to center when not focusing on entity
+      // Smoothly return to center if we were focused
+      const currentTarget = controlsRef.current.target;
+      if (currentTarget.distanceTo(new THREE.Vector3(0, 0, 0)) > 0.01) {
+        currentTarget.lerp(new THREE.Vector3(0, 0, 0), delta * 3);
+      } else {
+        currentTarget.set(0, 0, 0);
+      }
     }
   });
 
   return (
     <OrbitControls
       ref={controlsRef}
-      enablePan={true}
+      enablePan={false}
       enableZoom={true}
       enableRotate={true}
       autoRotate={autoRotate && !targetPosition}
@@ -80,7 +89,6 @@ export default function CameraController({
       enableDamping={true}
       zoomSpeed={0.8}
       rotateSpeed={0.5}
-      panSpeed={0.5}
       target={[0, 0, 0]}
     />
   );

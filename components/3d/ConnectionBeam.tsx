@@ -23,11 +23,17 @@ interface ConnectionBeamProps {
   isConnected: boolean;
 }
 
-// Custom shader for animated gradient line
+// Enhanced shader for realistic energy beam
 const beamVertexShader = `
   varying vec2 vUv;
+  varying vec3 vPosition;
+  varying vec3 vNormal;
+  
   void main() {
     vUv = uv;
+    vPosition = position;
+    vNormal = normalize(normalMatrix * normal);
+    
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
@@ -37,20 +43,74 @@ const beamFragmentShader = `
   uniform float time;
   uniform float opacity;
   uniform float highlighted;
+  
   varying vec2 vUv;
-
+  varying vec3 vPosition;
+  varying vec3 vNormal;
+  
+  // Noise function for energy variation
+  float noise(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+  }
+  
+  // Smooth noise
+  float smoothNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    
+    float a = noise(i);
+    float b = noise(i + vec2(1.0, 0.0));
+    float c = noise(i + vec2(0.0, 1.0));
+    float d = noise(i + vec2(1.0, 1.0));
+    
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+  }
+  
   void main() {
-    // Create animated flowing effect
-    float flow = fract(vUv.x * 3.0 - time * 0.5);
-    float pulse = smoothstep(0.0, 0.3, flow) * smoothstep(1.0, 0.7, flow);
-
-    // Fade at ends
-    float endFade = smoothstep(0.0, 0.1, vUv.x) * smoothstep(1.0, 0.9, vUv.x);
-
-    // Combine effects
-    float alpha = mix(0.3, 0.8, pulse * highlighted) * endFade * opacity;
-
-    gl_FragColor = vec4(color, alpha);
+    // Animated flowing energy effect
+    float flowSpeed = highlighted > 0.5 ? 0.8 : 0.4;
+    float flow = fract(vUv.x * 4.0 - time * flowSpeed);
+    
+    // Create pulsing energy wave
+    float pulse = smoothstep(0.0, 0.2, flow) * smoothstep(1.0, 0.6, flow);
+    
+    // Add noise for energy variation
+    float energyNoise = smoothNoise(vec2(vUv.x * 8.0 + time * 0.5, time * 0.3));
+    energyNoise = energyNoise * 0.3 + 0.7; // Scale noise
+    
+    // Radial falloff from center
+    float radialDist = abs(vUv.y - 0.5) * 2.0;
+    float radialFade = 1.0 - smoothstep(0.0, 1.0, radialDist);
+    
+    // Fade at ends with smooth curve
+    float endFade = smoothstep(0.0, 0.15, vUv.x) * smoothstep(1.0, 0.85, vUv.x);
+    endFade = pow(endFade, 0.8); // Softer fade
+    
+    // Core energy intensity
+    float coreIntensity = mix(0.4, 1.0, pulse * highlighted);
+    coreIntensity *= energyNoise;
+    
+    // Edge glow effect
+    float edgeGlow = 1.0 - radialDist;
+    edgeGlow = pow(edgeGlow, 0.5);
+    
+    // Combine all effects
+    float alpha = coreIntensity * radialFade * endFade * opacity;
+    alpha += edgeGlow * 0.3 * opacity * highlighted;
+    
+    // Color variation based on energy flow
+    vec3 energyColor = color;
+    if (highlighted > 0.5) {
+      // Add white hot core to energy flow
+      float hotCore = pulse * 0.5;
+      energyColor = mix(color, vec3(1.0, 1.0, 1.0), hotCore);
+    }
+    
+    // Add slight color shift based on position
+    energyColor *= (0.9 + energyNoise * 0.1);
+    
+    gl_FragColor = vec4(energyColor, alpha);
   }
 `;
 

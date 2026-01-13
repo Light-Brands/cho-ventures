@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { Entity, EntityCategory } from '@/lib/ecosystem-data';
+import SphereShaderMaterial from './SphereShaderMaterial';
 
 // Category colors matching the existing palette
 const categoryColors: Record<EntityCategory, { main: string; glow: string }> = {
@@ -25,83 +26,7 @@ interface EntitySphereProps {
   onClick: (entity: Entity) => void;
 }
 
-// Orbital particles component for hub
-function OrbitalParticles({ color, radius, count = 20 }: { color: string; radius: number; count?: number }) {
-  const pointsRef = useRef<THREE.Points>(null);
 
-  const geometry = useMemo(() => {
-    const positions = new Float32Array(count * 3);
-    const sizes = new Float32Array(count);
-
-    for (let i = 0; i < count; i++) {
-      const angle = (i / count) * Math.PI * 2;
-      positions[i * 3] = Math.cos(angle) * radius;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 0.3;
-      positions[i * 3 + 2] = Math.sin(angle) * radius;
-      sizes[i] = Math.random() * 0.04 + 0.02;
-    }
-
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    return geo;
-  }, [count, radius]);
-
-  useFrame((state) => {
-    if (!pointsRef.current) return;
-    pointsRef.current.rotation.y = state.clock.elapsedTime * 0.3;
-    pointsRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.2) * 0.1;
-  });
-
-  return (
-    <points ref={pointsRef} geometry={geometry}>
-      <pointsMaterial
-        color={color}
-        size={0.06}
-        transparent
-        opacity={0.7}
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        sizeAttenuation
-      />
-    </points>
-  );
-}
-
-// Pulsing ring effect
-function PulsingRings({ color, baseRadius }: { color: string; baseRadius: number }) {
-  const ring1Ref = useRef<THREE.Mesh>(null);
-  const ring2Ref = useRef<THREE.Mesh>(null);
-
-  useFrame((state) => {
-    const time = state.clock.elapsedTime;
-
-    if (ring1Ref.current) {
-      const scale1 = 1 + Math.sin(time * 2) * 0.1;
-      ring1Ref.current.scale.set(scale1, scale1, 1);
-      (ring1Ref.current.material as THREE.MeshBasicMaterial).opacity = 0.3 + Math.sin(time * 2) * 0.15;
-    }
-
-    if (ring2Ref.current) {
-      const scale2 = 1 + Math.sin(time * 2 + Math.PI) * 0.1;
-      ring2Ref.current.scale.set(scale2, scale2, 1);
-      (ring2Ref.current.material as THREE.MeshBasicMaterial).opacity = 0.2 + Math.sin(time * 2 + Math.PI) * 0.1;
-    }
-  });
-
-  return (
-    <group rotation={[Math.PI / 2, 0, 0]}>
-      <mesh ref={ring1Ref}>
-        <ringGeometry args={[baseRadius * 1.3, baseRadius * 1.35, 64]} />
-        <meshBasicMaterial color={color} transparent opacity={0.3} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh ref={ring2Ref}>
-        <ringGeometry args={[baseRadius * 1.5, baseRadius * 1.55, 64]} />
-        <meshBasicMaterial color={color} transparent opacity={0.2} side={THREE.DoubleSide} />
-      </mesh>
-    </group>
-  );
-}
 
 export default function EntitySphere({
   entity,
@@ -114,9 +39,6 @@ export default function EntitySphere({
 }: EntitySphereProps) {
   const groupRef = useRef<THREE.Group>(null);
   const meshRef = useRef<THREE.Mesh>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
-  const outerGlowRef = useRef<THREE.Mesh>(null);
-  const ringRef = useRef<THREE.Mesh>(null);
   const [localHover, setLocalHover] = useState(false);
 
   const colors = categoryColors[entity.category];
@@ -132,24 +54,12 @@ export default function EntitySphere({
 
   // Animate the sphere
   useFrame((state, delta) => {
-    if (!meshRef.current || !glowRef.current) return;
+    if (!meshRef.current) return;
 
     // Smooth scale transition
     const currentScale = meshRef.current.scale.x;
     const newScale = THREE.MathUtils.lerp(currentScale, targetScale, delta * 8);
     meshRef.current.scale.setScalar(newScale);
-    glowRef.current.scale.setScalar(newScale * 1.8);
-
-    // Outer glow follows
-    if (outerGlowRef.current) {
-      outerGlowRef.current.scale.setScalar(newScale * 2.5);
-    }
-
-    // Pulsing animation for hub and selected entities
-    if (isHub || isSelected) {
-      const pulse = Math.sin(state.clock.elapsedTime * 2) * 0.05 + 1;
-      glowRef.current.scale.multiplyScalar(pulse);
-    }
 
     // Floating animation for all entities
     if (groupRef.current) {
@@ -157,19 +67,8 @@ export default function EntitySphere({
       groupRef.current.position.y = position[1] + floatOffset;
     }
 
-    // Rotate selection ring
-    if (ringRef.current && isSelected) {
-      ringRef.current.rotation.z += delta * 0.5;
-    }
-
-    // Opacity for disconnected state
-    const targetOpacity = isConnected ? 1 : 0.25;
-    const material = meshRef.current.material as THREE.MeshStandardMaterial;
-    material.opacity = THREE.MathUtils.lerp(material.opacity, targetOpacity, delta * 8);
-
-    // Glow intensity based on state
-    const targetEmissive = isSelected ? 0.8 : isHovered || localHover ? 0.5 : 0.3;
-    material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity, targetEmissive, delta * 5);
+    // Opacity and glow transitions are now handled by shader uniforms
+    // The shader material will handle these transitions internally
   });
 
   const handlePointerOver = (e: { stopPropagation: () => void }) => {
@@ -192,29 +91,7 @@ export default function EntitySphere({
 
   return (
     <group ref={groupRef} position={position}>
-      {/* Outer atmospheric glow */}
-      <mesh ref={outerGlowRef} scale={2.5}>
-        <sphereGeometry args={[baseSize, 24, 24]} />
-        <meshBasicMaterial
-          color={colors.glow}
-          transparent
-          opacity={isSelected ? 0.08 : isHovered ? 0.05 : 0.02}
-          depthWrite={false}
-        />
-      </mesh>
-
-      {/* Inner glow sphere */}
-      <mesh ref={glowRef} scale={1.8}>
-        <sphereGeometry args={[baseSize, 32, 32]} />
-        <meshBasicMaterial
-          color={colors.glow}
-          transparent
-          opacity={isSelected ? 0.2 : isHovered ? 0.15 : 0.08}
-          depthWrite={false}
-        />
-      </mesh>
-
-      {/* Main sphere */}
+      {/* Main sphere - clean, no halos */}
       <mesh
         ref={meshRef}
         onPointerOver={handlePointerOver}
@@ -222,75 +99,59 @@ export default function EntitySphere({
         onClick={handleClick}
       >
         <sphereGeometry args={[baseSize, 64, 64]} />
-        <meshStandardMaterial
+        <SphereShaderMaterial
           color={colors.main}
-          emissive={colors.main}
-          emissiveIntensity={0.3}
-          roughness={0.15}
-          metalness={0.9}
-          transparent
-          opacity={1}
-          envMapIntensity={0.5}
+          glowColor={colors.glow}
+          emissiveIntensity={isSelected ? 0.8 : isHovered || localHover ? 0.5 : 0.3}
+          opacity={1.0}
+          isSelected={isSelected}
+          isHovered={isHovered || localHover}
+          isHub={isHub}
         />
       </mesh>
 
-      {/* Inner bright core */}
-      <mesh scale={0.5}>
-        <sphereGeometry args={[baseSize, 32, 32]} />
-        <meshBasicMaterial
-          color="#ffffff"
-          transparent
-          opacity={0.3}
-        />
-      </mesh>
 
-      {/* Hub-specific effects */}
-      {isHub && (
-        <>
-          <OrbitalParticles color={colors.glow} radius={baseSize * 1.8} count={30} />
-          <PulsingRings color={colors.glow} baseRadius={baseSize} />
-        </>
-      )}
-
-      {/* Selection ring */}
-      {isSelected && (
-        <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[baseSize * 1.6, 0.025, 16, 64]} />
-          <meshBasicMaterial color={colors.glow} transparent opacity={0.9} />
-        </mesh>
-      )}
-
-      {/* Secondary selection ring */}
-      {isSelected && (
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[baseSize * 1.9, 0.015, 16, 64]} />
-          <meshBasicMaterial color={colors.glow} transparent opacity={0.4} />
-        </mesh>
-      )}
-
-      {/* Entity label (always visible, fades with distance) */}
+      {/* Entity label - always fully visible and optimized */}
       <Html
         center
-        distanceFactor={8}
+        distanceFactor={12}
         occlude={false}
+        zIndexRange={[100, 0]}
         style={{
           pointerEvents: 'none',
-          transform: 'translateY(50px)',
-          opacity: isSelected || isHovered || localHover ? 1 : 0.7,
-          transition: 'opacity 0.2s ease',
+          transform: 'translateY(60px)',
+          opacity: 1,
+          userSelect: 'none',
         }}
       >
         <div className="text-center whitespace-nowrap">
           <div
-            className="text-[10px] font-medium tracking-wide uppercase"
-            style={{ color: colors.glow, textShadow: `0 0 10px ${colors.main}` }}
+            className="text-[13px] font-bold tracking-wider uppercase px-3.5 py-1.5 rounded-lg backdrop-blur-md"
+            style={{
+              color: colors.glow,
+              textShadow: `
+                0 0 12px ${colors.main},
+                0 0 18px ${colors.main}90,
+                0 0 24px ${colors.main}70,
+                0 3px 8px rgba(0,0,0,0.95)
+              `,
+              background: `linear-gradient(135deg, ${colors.main}40, ${colors.main}25)`,
+              border: `2px solid ${colors.main}60`,
+              boxShadow: `
+                0 0 20px ${colors.main}50,
+                0 6px 16px rgba(0,0,0,0.8),
+                inset 0 1px 0 ${colors.main}30
+              `,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+            }}
           >
             {entity.shortName}
           </div>
         </div>
       </Html>
 
-      {/* Detailed tooltip on hover */}
+      {/* Detailed tooltip on hover - improved */}
       {(isHovered || localHover) && !isSelected && (
         <Html
           center
@@ -300,9 +161,23 @@ export default function EntitySphere({
             transform: 'translateY(-70px)',
           }}
         >
-          <div className="bg-cho-deep/95 backdrop-blur-md px-3 py-2 rounded-lg border border-cho-steel/50 shadow-lg shadow-black/50 whitespace-nowrap">
-            <div className="text-xs font-medium text-white">{entity.name}</div>
-            <div className="text-[10px] text-white/50 mt-0.5">{entity.tagline}</div>
+          <div
+            className="backdrop-blur-md px-4 py-2.5 rounded-xl border shadow-2xl whitespace-nowrap"
+            style={{
+              background: `linear-gradient(135deg, ${colors.main}25, ${colors.main}10)`,
+              borderColor: `${colors.main}60`,
+              boxShadow: `
+                0 0 20px ${colors.main}40,
+                0 8px 32px rgba(0,0,0,0.6)
+              `,
+            }}
+          >
+            <div className="text-sm font-semibold text-white" style={{ textShadow: `0 2px 4px rgba(0,0,0,0.5)` }}>
+              {entity.name}
+            </div>
+            <div className="text-[10px] mt-1" style={{ color: colors.glow, textShadow: `0 1px 2px rgba(0,0,0,0.5)` }}>
+              {entity.tagline}
+            </div>
           </div>
         </Html>
       )}
