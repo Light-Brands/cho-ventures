@@ -29,36 +29,47 @@ interface EntityNodeProps {
   };
 }
 
-const categoryStyles: Record<EntityCategory, { bg: string; border: string; glow: string; text: string }> = {
+const categoryStyles: Record<EntityCategory, {
+  bg: string;
+  border: string;
+  glow: string;
+  text: string;
+  ring: string;
+}> = {
   hub: {
-    bg: 'bg-gradient-to-br from-hub/30 to-hub/10',
-    border: 'border-hub/60',
-    glow: 'shadow-[0_0_40px_rgba(236,72,153,0.4)]',
+    bg: 'bg-gradient-to-br from-hub/20 via-hub/10 to-transparent',
+    border: 'border-hub/40',
+    glow: 'shadow-[0_0_32px_rgba(168,85,247,0.35)]',
     text: 'text-hub-light',
+    ring: 'ring-hub/40',
   },
   'real-estate': {
-    bg: 'bg-gradient-to-br from-real-estate/25 to-real-estate/5',
-    border: 'border-real-estate/50',
-    glow: 'shadow-[0_0_30px_rgba(59,130,246,0.3)]',
+    bg: 'bg-gradient-to-br from-real-estate/15 to-transparent',
+    border: 'border-real-estate/30',
+    glow: 'shadow-[0_0_24px_rgba(59,130,246,0.3)]',
     text: 'text-real-estate-light',
+    ring: 'ring-real-estate/30',
   },
   regenerative: {
-    bg: 'bg-gradient-to-br from-regenerative/25 to-regenerative/5',
-    border: 'border-regenerative/50',
-    glow: 'shadow-[0_0_30px_rgba(16,185,129,0.3)]',
+    bg: 'bg-gradient-to-br from-regenerative/15 to-transparent',
+    border: 'border-regenerative/30',
+    glow: 'shadow-[0_0_24px_rgba(20,184,166,0.3)]',
     text: 'text-regenerative-light',
+    ring: 'ring-regenerative/30',
   },
   authority: {
-    bg: 'bg-gradient-to-br from-authority/25 to-authority/5',
-    border: 'border-authority/50',
-    glow: 'shadow-[0_0_30px_rgba(245,158,11,0.3)]',
+    bg: 'bg-gradient-to-br from-authority/15 to-transparent',
+    border: 'border-authority/30',
+    glow: 'shadow-[0_0_24px_rgba(14,165,233,0.3)]',
     text: 'text-authority-light',
+    ring: 'ring-authority/30',
   },
   philanthropy: {
-    bg: 'bg-gradient-to-br from-philanthropy/25 to-philanthropy/5',
-    border: 'border-philanthropy/50',
-    glow: 'shadow-[0_0_30px_rgba(139,92,246,0.3)]',
+    bg: 'bg-gradient-to-br from-philanthropy/15 to-transparent',
+    border: 'border-philanthropy/30',
+    glow: 'shadow-[0_0_24px_rgba(99,102,241,0.3)]',
     text: 'text-philanthropy-light',
+    ring: 'ring-philanthropy/30',
   },
 };
 
@@ -85,120 +96,90 @@ function EntityNode({ data }: EntityNodeProps) {
 
   return (
     <>
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="!bg-transparent !border-0"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="!bg-transparent !border-0"
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="!bg-transparent !border-0"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="!bg-transparent !border-0"
-      />
+      <Handle type="target" position={Position.Top} className="!bg-transparent !border-0 !w-0 !h-0" />
+      <Handle type="source" position={Position.Bottom} className="!bg-transparent !border-0 !w-0 !h-0" />
+      <Handle type="target" position={Position.Left} className="!bg-transparent !border-0 !w-0 !h-0" />
+      <Handle type="source" position={Position.Right} className="!bg-transparent !border-0 !w-0 !h-0" />
 
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{
-          scale: isSelected ? 1.05 : isHovered ? 1.02 : 1,
-          opacity: isConnected ? 1 : 0.3,
+          scale: isSelected ? 1.03 : isHovered ? 1.01 : 1,
+          opacity: isConnected ? 1 : 0.25,
         }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
         onMouseEnter={() => onHover(entity.id)}
         onMouseLeave={() => onHover(null)}
         className={`
-          relative cursor-pointer
-          ${isHub ? 'w-[200px]' : 'w-[160px]'}
+          relative cursor-pointer select-none
+          ${isHub ? 'w-44' : 'w-36'}
           ${styles.bg}
-          backdrop-blur-xl
-          border-2 ${styles.border}
-          rounded-2xl
-          p-4
-          transition-all duration-300
+          backdrop-blur-md
+          border ${styles.border}
+          rounded-xl
+          ${isHub ? 'p-4' : 'p-3'}
+          transition-shadow duration-200
           ${isSelected || isHovered ? styles.glow : ''}
-          ${isSelected ? 'ring-2 ring-white/30 ring-offset-2 ring-offset-transparent' : ''}
+          ${isSelected ? `ring-1 ${styles.ring}` : ''}
         `}
       >
-        {/* Animated glow ring for hub */}
+        {/* Hub gradient ring */}
         {isHub && (
-          <div className="absolute inset-0 rounded-2xl overflow-hidden">
-            <div className="absolute inset-[-2px] bg-gradient-conic from-hub via-real-estate via-regenerative via-authority to-hub rounded-2xl animate-spin-slow opacity-30" />
-            <div className="absolute inset-[1px] bg-cho-deep/90 rounded-2xl" />
-          </div>
+          <div className="absolute -inset-px rounded-xl bg-gradient-to-br from-hub/30 via-transparent to-hub/10 -z-10" />
         )}
 
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col">
           {/* Icon */}
           <div className={`
-            ${isHub ? 'w-14 h-14' : 'w-10 h-10'}
-            rounded-xl
+            ${isHub ? 'w-11 h-11 mb-2.5 mx-auto' : 'w-8 h-8 mb-2'}
+            rounded-lg
             ${styles.bg}
             border ${styles.border}
             flex items-center justify-center
-            mb-3
-            ${isHub ? 'mx-auto' : ''}
           `}>
-            <IconComponent className={`${isHub ? 'w-7 h-7' : 'w-5 h-5'} ${styles.text}`} />
+            <IconComponent className={`${isHub ? 'w-5 h-5' : 'w-4 h-4'} ${styles.text}`} />
           </div>
 
           {/* Name */}
           <h3 className={`
-            ${isHub ? 'text-base text-center' : 'text-sm'}
-            font-semibold text-white
-            leading-tight
-            mb-1
+            ${isHub ? 'text-sm text-center' : 'text-xs'}
+            font-semibold text-white/90
+            leading-tight truncate
           `}>
             {entity.name}
           </h3>
 
-          {/* Tagline */}
-          <p className={`
-            text-xs text-white/50
-            leading-tight
-            ${isHub ? 'text-center' : ''}
-            line-clamp-2
-          `}>
-            {entity.tagline}
-          </p>
-
-          {/* Status badge */}
-          {entity.status !== 'active' && (
-            <div className="mt-2">
-              <span className={`
-                inline-block
-                text-[10px] font-medium
-                uppercase tracking-wider
-                px-2 py-0.5
-                rounded-full
-                ${entity.status === 'planned' ? 'bg-authority/20 text-authority-light' : 'bg-white/10 text-white/50'}
-              `}>
-                {entity.status}
-              </span>
-            </div>
+          {/* Tagline - hub only */}
+          {isHub && (
+            <p className="text-[10px] text-white/40 text-center mt-1 line-clamp-1">
+              {entity.tagline}
+            </p>
           )}
 
-          {/* Connection count indicator */}
-          <div className={`
-            absolute -top-2 -right-2
-            w-6 h-6
-            rounded-full
-            ${styles.bg}
-            border ${styles.border}
-            flex items-center justify-center
-            text-[10px] font-bold
-            ${styles.text}
-          `}>
-            {entity.connections.length}
-          </div>
+          {/* Status badge - non-active only */}
+          {entity.status !== 'active' && (
+            <span className={`
+              mt-2 inline-block self-start
+              text-[9px] font-medium uppercase tracking-wide
+              px-1.5 py-0.5 rounded
+              ${entity.status === 'planned'
+                ? 'bg-authority/15 text-authority-light border border-authority/20'
+                : 'bg-white/5 text-white/40 border border-white/10'}
+            `}>
+              {entity.status}
+            </span>
+          )}
+        </div>
+
+        {/* Connection count */}
+        <div className={`
+          absolute -top-1.5 -right-1.5
+          w-5 h-5 rounded-full
+          bg-cho-slate border ${styles.border}
+          flex items-center justify-center
+          text-[9px] font-semibold ${styles.text}
+        `}>
+          {entity.connections.length}
         </div>
       </motion.div>
     </>
