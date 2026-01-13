@@ -6,6 +6,36 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Network } from 'lucide-react';
 
+// Flickering code-style text reveal component
+function FlickeringText({ text, delay = 0 }: { text: string; delay?: number }) {
+  const chars = text.split('');
+
+  return (
+    <div className="flex items-center justify-center">
+      {chars.map((char, index) => (
+        <motion.span
+          key={index}
+          className="inline-block font-mono text-[10px] text-white/30 tracking-[0.4em] uppercase"
+          initial={{ opacity: 0, filter: 'blur(4px)', scale: 0.8 }}
+          animate={{
+            opacity: [0, 0.3, 0.9, 0.4, 1, 0.7, 1],
+            filter: ['blur(4px)', 'blur(2px)', 'blur(0px)', 'blur(1px)', 'blur(0px)', 'blur(0px)', 'blur(0px)'],
+            scale: [0.8, 1.1, 0.95, 1.05, 1],
+          }}
+          transition={{
+            duration: 0.9,
+            delay: delay + index * 0.06,
+            times: [0, 0.2, 0.35, 0.5, 0.65, 0.8, 1],
+            ease: 'easeOut',
+          }}
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </motion.span>
+      ))}
+    </div>
+  );
+}
+
 const EcosystemMap = dynamic(() => import('@/components/EcosystemMap'), {
   ssr: false,
   loading: () => (
@@ -32,6 +62,7 @@ const EcosystemMap = dynamic(() => import('@/components/EcosystemMap'), {
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
+        <FlickeringText text="COMMAND CENTER" delay={0.5} />
       </motion.div>
     </div>
   ),
@@ -81,6 +112,7 @@ export default function Home() {
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 />
               </div>
+              <FlickeringText text="COMMAND CENTER" delay={0.5} />
             </motion.div>
           </motion.div>
         )}
