@@ -117,3 +117,16 @@ body {
 .react-flow__edge {
   pointer-events: none;
 }
+
+/* Mobile scrolling for plan page */
+[data-plan-page] {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  position: relative;
+  height: auto;
+}
+
+[data-plan-page] main {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}

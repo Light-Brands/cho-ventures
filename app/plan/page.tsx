@@ -102,7 +102,7 @@ export default function MasterPlanPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080B14] text-white">
+    <div data-plan-page className="min-h-screen bg-[#080B14] text-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#080B14]/90 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
