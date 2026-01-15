@@ -162,13 +162,20 @@ export const centralHubLayers = [
 ];
 
 export const techStackRecommendations = [
-  { layer: 'CRM Core', tools: 'HubSpot or GoHighLevel', purpose: 'Contact management, automation, pipeline' },
-  { layer: 'AI Layer', tools: 'Claude API, OpenAI API', purpose: 'Content, intelligence, personalization' },
-  { layer: 'Community App', tools: 'Custom Build or Circle.so', purpose: 'ChoZen member platform' },
-  { layer: 'Course Platform', tools: 'Kajabi, Teachable, or Custom', purpose: 'Book companion, certifications' },
-  { layer: 'Analytics', tools: 'Custom Dashboard + Native', purpose: 'Cross-entity visibility' },
-  { layer: 'Websites', tools: 'Webflow or Custom', purpose: 'Unified design system' },
-  { layer: 'Email/SMS', tools: 'Integrated via CRM', purpose: 'Multi-channel communication' },
+  { layer: 'Frontend Framework', tools: 'Next.js 14+ with React 18+', purpose: 'Server-side rendering, app router, full-stack capabilities' },
+  { layer: 'Backend Runtime', tools: 'Node.js with Next.js API Routes', purpose: 'Scalable API layer, serverless functions, microservices-ready' },
+  { layer: 'Database', tools: 'PostgreSQL + Prisma ORM', purpose: 'Enterprise-grade data layer, type-safe queries, migrations' },
+  { layer: 'CRM Module', tools: 'Custom-built React CRM', purpose: 'Contact management, automation, pipeline — fully owned' },
+  { layer: 'AI Layer', tools: 'Claude API, OpenAI API (Direct Integration)', purpose: 'Content, intelligence, personalization — no middleware' },
+  { layer: 'Community Platform', tools: 'Custom Next.js App (ChoZen)', purpose: 'Member portal, forums, events — 100% customizable' },
+  { layer: 'Learning Management', tools: 'Custom LMS built on Next.js', purpose: 'Courses, certifications, book companion — fully owned' },
+  { layer: 'Analytics Dashboard', tools: 'Custom React Dashboard', purpose: 'Real-time cross-entity visibility, custom metrics' },
+  { layer: 'Websites', tools: 'Next.js with Shared Design System', purpose: 'Unified branding, component library, SSR/SSG' },
+  { layer: 'Email/SMS', tools: 'Custom integration (SendGrid/Twilio APIs)', purpose: 'Multi-channel communication, full control' },
+  { layer: 'Authentication', tools: 'NextAuth.js + Custom RBAC', purpose: 'Secure auth, role-based access, SSO-ready' },
+  { layer: 'Hosting/DevOps', tools: 'Vercel or AWS (ECS/Lambda)', purpose: 'Auto-scaling, edge deployment, CI/CD' },
+  { layer: 'State Management', tools: 'React Query + Zustand', purpose: 'Server state, client state, optimistic updates' },
+  { layer: 'UI Framework', tools: 'Tailwind CSS + Radix UI', purpose: 'Consistent design system, accessible components' },
 ];
 
 export const aiPriorities = [
