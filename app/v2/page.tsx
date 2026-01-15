@@ -145,10 +145,11 @@ export default function V2Page() {
             {/* Master Plan Link */}
             <Link
               href="/plan"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 hover:border-purple-500/50 hover:from-purple-500/30 hover:to-blue-500/30 transition-all group"
+              className="flex items-center justify-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 hover:border-purple-500/50 hover:from-purple-500/30 hover:to-blue-500/30 transition-all group"
+              title="Master Plan"
             >
-              <FileText className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-300" />
-              <span className="text-[11px] text-purple-300 font-medium group-hover:text-purple-200">Master Plan</span>
+              <FileText className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-purple-400 group-hover:text-purple-300" />
+              <span className="hidden sm:inline text-[11px] text-purple-300 font-medium group-hover:text-purple-200">Master Plan</span>
             </Link>
 
             <div className="w-px h-4 bg-white/10" />

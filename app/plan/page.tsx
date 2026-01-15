@@ -102,11 +102,11 @@ export default function MasterPlanPage() {
   };
 
   return (
-    <div data-plan-page className="min-h-screen bg-[#080B14] text-white overflow-y-auto overflow-x-hidden" style={{ WebkitOverflowScrolling: 'touch' }}>
+    <div data-plan-page className="min-h-screen bg-[#080B14] text-white" style={{ overflowX: 'hidden' }}>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[#080B14]/90 backdrop-blur-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/v2" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -769,7 +769,7 @@ export default function MasterPlanPage() {
               Cho Ventures AI — Regenerative impact, amplified by intelligence
             </p>
             <Link
-              href="/v2"
+              href="/"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-white font-medium hover:opacity-90 transition-opacity"
             >
               Explore the Ecosystem

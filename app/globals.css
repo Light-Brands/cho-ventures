@@ -118,15 +118,27 @@ body {
   pointer-events: none;
 }
 
-/* Mobile scrolling for plan page */
+/* Scrolling for plan page */
 [data-plan-page] {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
   position: relative;
   height: auto;
+  min-height: 100vh;
+}
+
+html:has([data-plan-page]) {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+html:has([data-plan-page]) body {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 [data-plan-page] main {
-  touch-action: pan-y;
+  touch-action: pan-y pan-x;
   -webkit-overflow-scrolling: touch;
 }
