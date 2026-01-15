@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import { Network, Box } from 'lucide-react';
+import { Network, Box, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 // Flickering code-style text reveal component
@@ -141,6 +141,17 @@ export default function Home() {
 
           {/* Stats & Version Toggle */}
           <div className="flex items-center gap-2">
+            {/* Master Plan Link */}
+            <Link
+              href="/plan"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 hover:border-purple-500/50 hover:from-purple-500/30 hover:to-blue-500/30 transition-all group"
+            >
+              <FileText className="w-3.5 h-3.5 text-purple-400 group-hover:text-purple-300" />
+              <span className="text-[11px] text-purple-300 font-medium group-hover:text-purple-200">Master Plan</span>
+            </Link>
+
+            <div className="w-px h-4 bg-white/10" />
+
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cho-slate/50 border border-cho-steel/30">
               <Network className="w-3 h-3 text-white/40" />
               <span className="text-[11px] text-white/50">12 Entities</span>
