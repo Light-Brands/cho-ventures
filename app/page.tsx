@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Network, Box, FileText } from 'lucide-react';
 import Link from 'next/link';
+import LockScreen from '@/components/LockScreen';
 
 // Flickering code-style text reveal component
 function FlickeringText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -70,17 +71,29 @@ const EcosystemMap = dynamic(() => import('@/components/EcosystemMap'), {
 });
 
 export default function Home() {
+  const [isLocked, setIsLocked] = useState(true);
   const [showIntro, setShowIntro] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    setIsLoaded(true);
-    const timer = setTimeout(() => setShowIntro(false), 2200);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!isLocked) {
+      setIsLoaded(true);
+      const timer = setTimeout(() => setShowIntro(false), 2200);
+      return () => clearTimeout(timer);
+    }
+  }, [isLocked]);
+
+  const handleUnlock = () => {
+    setIsLocked(false);
+  };
 
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-cho-midnight">
+      {/* Lock Screen */}
+      <AnimatePresence>
+        {isLocked && <LockScreen onUnlock={handleUnlock} />}
+      </AnimatePresence>
+
       {/* Intro Animation */}
       <AnimatePresence>
         {showIntro && (
