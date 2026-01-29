@@ -51,7 +51,7 @@ export const executiveSummary = {
     description: 'A comprehensive AI transformation that unifies the entire ecosystem:',
     layers: [
       { name: 'Central Hub', items: ['Command Center', 'AI Orchestration', 'Unified CRM', 'Content Engine', 'Analytics'] },
-      { name: 'Entity Layer', items: ['Metro 1', 'Future of Cities', 'PHX-JAX', 'Climate HUB', 'ChoZen Retreat', 'Foundations'] },
+      { name: 'Entity Layer', items: ['Metro 1', 'Future of Cities', 'PHX-JAX', 'Climate HUB', 'CCRL', 'ChoZen IP', 'Foundations'] },
       { name: 'Community Layer', items: ['ChoZen App', 'Member Portal', 'Events & Retreats', 'Learning Platform', 'Community Forums'] },
       { name: 'Authority Layer', items: ['Book Launch', 'Course Platform', 'Speaking/Media', 'Newsletter'] },
       { name: 'AI Layer', items: ['Lead Intelligence', 'Content Generation', 'Automation Engine', 'Personalization', 'Predictive Models'] },
@@ -63,12 +63,14 @@ export const executiveSummary = {
 export const entityProfiles = [
   { entity: 'Cho Ventures', type: 'Holding Company', location: 'Miami', function: 'Portfolio management, strategic direction' },
   { entity: 'Metro 1 Commercial', type: 'Real Estate Brokerage', location: 'Miami', function: 'Commercial property sales, leasing, tenant rep' },
-  { entity: 'Future of Cities', type: 'Development Consortium', location: 'Multi-City', function: 'ESG real estate development, regenerative design' },
-  { entity: 'PHX-JAX District', type: 'Mixed-Use Development', location: 'Jacksonville', function: 'Arts, innovation, creative workspace campus' },
+  { entity: 'Future of Cities', type: 'Regenerative Placemaking IP & Development', location: 'Multi-City', function: 'FoC IP & Assets, regenerative placemaking framework, global development pipeline' },
+  { entity: 'PHX-JAX District', type: 'Arts & Innovation District', location: 'Jacksonville', function: 'Real estate investment, commercial + residential leasing, affordable housing' },
   { entity: 'Climate + Innovation HUB', type: 'Innovation Center', location: 'Miami (Little Haiti)', function: 'Climate tech incubation, programming' },
-  { entity: 'ChoZen Retreat', type: 'Wellness Retreat', location: 'Sebastian, FL', function: 'Retreats, eco-tourism, regenerative living' },
-  { entity: 'Cho Family Foundation', type: '501(c)(3)', location: 'Miami', function: 'Environmental & cultural philanthropy' },
-  { entity: 'M1 Community Fund', type: 'Donor-Advised Fund', location: 'Miami', function: 'Community relief and small business support' },
+  { entity: 'ChoZen Center for Regenerative Living', type: '501(c)(3) Nonprofit', location: 'Sebastian, FL', function: 'Artisan Market, Farm Volunteer Days, Leadership Training, Artist Residency, Youth Summer Camp' },
+  { entity: 'ChoZen IP', type: 'IP Holder', location: 'Miami', function: 'Brand identity, residential, hospitality, membership platform, Casa Colibri, Sacred Items Gift Shop' },
+  { entity: 'Cho Family Foundation', type: 'Donor-Advised Fund (DAF)', location: 'Miami', function: 'Environmental & cultural philanthropy' },
+  { entity: 'Ximena Cho Legacy Fund', type: 'Donor-Advised Fund (DAF)', location: 'Miami', function: 'Legacy philanthropic investments, community development' },
+  { entity: 'Friends of PHXJAX', type: '501(c)(3) Nonprofit', location: 'Jacksonville', function: 'Bloom Labs, Spring Mural Jam, arts & community engagement' },
 ];
 
 export const unifiedStory = {
@@ -78,7 +80,7 @@ export const unifiedStory = {
     { name: 'Future of Cities', role: 'builds it into new developments' },
     { name: 'PHX-JAX', role: 'creates community through it' },
     { name: 'Climate HUB', role: 'incubates innovation for it' },
-    { name: 'ChoZen', role: 'embodies it as a living laboratory' },
+    { name: 'CCRL', role: 'embodies it as a living laboratory and educational center' },
     { name: 'Foundations', role: 'extend its benefits to underserved communities' },
   ],
 };
@@ -328,7 +330,7 @@ export const entityStrategies = [
     ],
   },
   {
-    entity: 'ChoZen Retreat',
+    entity: 'ChoZen Center for Regenerative Living',
     applications: [
       { application: 'Booking Optimization', description: 'AI manages availability, pricing, upsells' },
       { application: 'Guest Personalization', description: 'AI tailors retreat experience to guest profile' },
@@ -367,7 +369,7 @@ export const successMetrics = {
     { entity: 'Future of Cities', metric: 'Stakeholder engagement 3x' },
     { entity: 'PHX-JAX', metric: 'Tenant occupancy 95%+' },
     { entity: 'Climate HUB', metric: 'Startup success rate 2x' },
-    { entity: 'ChoZen', metric: 'Repeat guest rate 40%+' },
+    { entity: 'CCRL', metric: 'Repeat guest rate 40%+' },
     { entity: 'Foundations', metric: 'Donor retention 80%+' },
   ],
   impact: [

@@ -168,7 +168,7 @@ export default function Home() {
 
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cho-slate/50 border border-cho-steel/30">
               <Network className="w-3 h-3 text-white/40" />
-              <span className="text-[11px] text-white/50">12 Entities</span>
+              <span className="text-[11px] text-white/50">13 Entities</span>
             </div>
 
             {/* Toggle to 3D version */}

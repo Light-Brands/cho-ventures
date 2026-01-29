@@ -128,6 +128,9 @@ export default function ConnectionBeam({
   const color = new THREE.Color(categoryColors[sourceEntity.category]);
   const isPrimary = connection.type === 'primary';
   const isDataFlow = connection.type === 'data-flow';
+  const isIpLicensing = connection.type === 'ip-licensing';
+  const isServices = connection.type === 'services';
+  const isPlatform = connection.type === 'platform';
 
   // Create curved path
   const { curve, tubeGeometry } = useMemo(() => {
@@ -149,7 +152,7 @@ export default function ConnectionBeam({
     const tubeGeometry = new THREE.TubeGeometry(
       curve,
       64, // segments
-      isPrimary ? 0.02 : 0.012, // radius
+      isPrimary || isIpLicensing ? 0.02 : 0.012, // radius
       8, // radial segments
       false
     );

@@ -1,5 +1,6 @@
 export type EntityCategory = 'hub' | 'real-estate' | 'regenerative' | 'authority' | 'philanthropy';
 export type EntityStatus = 'active' | 'planned' | 'foundation';
+export type EntityType = 'ip-holder' | 'operating' | 'nonprofit' | 'daf' | 'development';
 
 export interface Entity {
   id: string;
@@ -10,6 +11,8 @@ export interface Entity {
   tagline: string;
   description: string;
   location?: string;
+  entityType?: EntityType;
+  notes?: string;
   metrics?: {
     label: string;
     value: string;
@@ -23,7 +26,7 @@ export interface Connection {
   id: string;
   source: string;
   target: string;
-  type: 'primary' | 'secondary' | 'data-flow';
+  type: 'primary' | 'secondary' | 'data-flow' | 'services' | 'platform' | 'ip-licensing';
   label?: string;
   bidirectional: boolean;
 }
@@ -51,7 +54,7 @@ export const entities: Entity[] = [
       'Real-time analytics dashboard',
       'Cross-entity referral engine',
     ],
-    connections: ['metro-1', 'future-of-cities', 'phx-jax', 'climate-hub', 'chozen-retreat', 'chozen-community', 'book-platform', 'course-platform', 'speaking-media', 'cho-foundation', 'm1-fund'],
+    connections: ['metro-1', 'future-of-cities', 'phx-jax', 'climate-hub', 'chozen-ccrl', 'chozen-ip', 'book-platform', 'course-platform', 'speaking-media', 'cho-foundation', 'ximena-legacy-fund', 'friends-of-phxjax'],
     icon: 'hub',
   },
   {
@@ -63,6 +66,7 @@ export const entities: Entity[] = [
     tagline: 'Miami\'s Premier Commercial Brokerage',
     description: 'A leading commercial real estate brokerage pioneering regenerative development in Miami\'s urban core. Known for transformative work in Wynwood and beyond.',
     location: 'Miami, FL',
+    notes: 'Provides commercial brokerage support services to FoC (not investment participation)',
     metrics: [
       { label: 'Transactions', value: '$4B+' },
       { label: 'Experience', value: '25+ Years' },
@@ -85,14 +89,15 @@ export const entities: Entity[] = [
     shortName: 'FoC',
     category: 'real-estate',
     status: 'active',
-    tagline: 'ESG Development Consortium',
-    description: 'A development consortium focused on creating regenerative, ESG-compliant developments that demonstrate how real estate can serve people, planet, and profit.',
+    tagline: 'Regenerative Placemaking IP & Development',
+    description: 'FoC IP & Assets (NewCo): Regenerative Placemaking Framework, Membership Platform, Book 1: Generation Regeneration, trademark, global development pipeline, strategic partnerships, and demonstration projects (HUB, PHXJAX).',
     location: 'Multi-City',
+    entityType: 'development',
     metrics: [
       { label: 'Projects', value: '12+' },
-      { label: 'Focus', value: 'ESG Development' },
+      { label: 'Focus', value: 'Regenerative Placemaking' },
       { label: 'Impact', value: 'Regenerative' },
-      { label: 'Expansion', value: 'National' },
+      { label: 'Expansion', value: 'Global' },
     ],
     aiApplications: [
       'ESG trend analysis and monitoring',
@@ -101,7 +106,7 @@ export const entities: Entity[] = [
       'Investor relations personalization',
       'Policy monitoring and alerts',
     ],
-    connections: ['cho-ventures', 'metro-1', 'phx-jax', 'climate-hub'],
+    connections: ['cho-ventures', 'metro-1', 'phx-jax', 'climate-hub', 'chozen-ccrl', 'chozen-ip'],
     icon: 'city',
   },
   {
@@ -110,8 +115,8 @@ export const entities: Entity[] = [
     shortName: 'PHX',
     category: 'real-estate',
     status: 'active',
-    tagline: 'Arts & Innovation Campus',
-    description: 'An 8.5-acre mixed-use development in Jacksonville creating a vibrant arts, innovation, and creative workspace campus that brings community together.',
+    tagline: 'Arts & Innovation District',
+    description: 'Arts & Innovation District in Jacksonville: real estate investment, commercial + residential leasing, affordable housing, and PHXJAX.com.',
     location: 'Jacksonville, FL',
     metrics: [
       { label: 'Campus Size', value: '8.5 Acres' },
@@ -126,7 +131,7 @@ export const entities: Entity[] = [
       'Space optimization analytics',
       'Predictive maintenance',
     ],
-    connections: ['cho-ventures', 'future-of-cities'],
+    connections: ['cho-ventures', 'future-of-cities', 'friends-of-phxjax'],
     icon: 'warehouse',
   },
   {
@@ -155,18 +160,20 @@ export const entities: Entity[] = [
     icon: 'leaf',
   },
   {
-    id: 'chozen-retreat',
-    name: 'ChoZen Retreat',
-    shortName: 'CZR',
+    id: 'chozen-ccrl',
+    name: 'ChoZen Center for Regenerative Living',
+    shortName: 'CCRL',
     category: 'regenerative',
     status: 'active',
-    tagline: 'Regenerative Wellness Sanctuary',
-    description: 'A 40-acre wellness retreat and eco-tourism destination in Sebastian, FL. A living laboratory for regenerative living and Blue Zone principles.',
+    entityType: 'nonprofit',
+    tagline: '501(c)(3) Regenerative Living Center',
+    description: 'A 40-acre 501(c)(3) nonprofit in Sebastian, FL. Programs include Artisan Market, Farm Volunteer Days, Leadership Training, Weekly Programming, Artist Residency, and Youth Summer Camp.',
     location: 'Sebastian, FL',
+    notes: 'Pending: CCRL <> ChoZen IP licensing agreement details',
     metrics: [
       { label: 'Property', value: '40 Acres' },
-      { label: 'Experience', value: 'Wellness' },
-      { label: 'Model', value: 'Blue Zone' },
+      { label: 'Type', value: '501(c)(3)' },
+      { label: 'Programs', value: '6+' },
       { label: 'Impact', value: 'Transformative' },
     ],
     aiApplications: [
@@ -176,23 +183,24 @@ export const entities: Entity[] = [
       'Event targeting and promotion',
       'Demand forecasting',
     ],
-    connections: ['cho-ventures', 'chozen-community', 'book-platform', 'course-platform'],
+    connections: ['cho-ventures', 'chozen-ip', 'book-platform', 'course-platform', 'future-of-cities'],
     icon: 'sun',
   },
   {
-    id: 'chozen-community',
-    name: 'ChoZen Community',
-    shortName: 'CZC',
+    id: 'chozen-ip',
+    name: 'ChoZen IP',
+    shortName: 'CZIP',
     category: 'regenerative',
-    status: 'planned',
-    tagline: 'Member Engagement Platform',
-    description: 'A dedicated community app connecting ChoZen members, retreat guests, and regenerative living practitioners in a vibrant digital ecosystem.',
-    location: 'Digital',
+    status: 'active',
+    entityType: 'ip-holder',
+    tagline: 'Brand & Intellectual Property',
+    description: 'ChoZen brand identity, residential, hospitality, membership platform, Casa Colibri, Sacred Items Gift Shop, and tech framework. IP holder licensing to CCRL and ecosystem entities.',
+    location: 'Miami, FL',
     metrics: [
-      { label: 'Target', value: '10,000+ Members' },
-      { label: 'Features', value: 'Full Platform' },
-      { label: 'Engagement', value: 'AI-Powered' },
-      { label: 'Launch', value: 'Coming Soon' },
+      { label: 'Assets', value: 'Brand & IP' },
+      { label: 'Licensing', value: 'Active' },
+      { label: 'Platform', value: 'Membership' },
+      { label: 'Scope', value: 'Ecosystem-wide' },
     ],
     aiApplications: [
       'Personalized content feeds',
@@ -201,7 +209,7 @@ export const entities: Entity[] = [
       'Learning path curation',
       'Community health monitoring',
     ],
-    connections: ['cho-ventures', 'chozen-retreat', 'course-platform'],
+    connections: ['cho-ventures', 'chozen-ccrl', 'course-platform', 'future-of-cities'],
     icon: 'users',
   },
   {
@@ -211,7 +219,7 @@ export const entities: Entity[] = [
     category: 'authority',
     status: 'planned',
     tagline: 'Regenerative Living Philosophy',
-    description: 'Tony Cho\'s upcoming book codifying his philosophy of regenerative living, placemaking, and building communities that thrive.',
+    description: 'Two book projects: Generation Regeneration (FoC book on regenerative placemaking) and Soft Power (Tony\'s personal philosophy on regenerative living and building communities that thrive).',
     location: 'Publishing',
     metrics: [
       { label: 'Topic', value: 'Regenerative Living' },
@@ -226,7 +234,7 @@ export const entities: Entity[] = [
       'Reader-to-student conversion',
       'Review generation and monitoring',
     ],
-    connections: ['cho-ventures', 'course-platform', 'speaking-media', 'chozen-retreat'],
+    connections: ['cho-ventures', 'course-platform', 'speaking-media', 'chozen-ccrl'],
     icon: 'book',
   },
   {
@@ -236,7 +244,7 @@ export const entities: Entity[] = [
     category: 'authority',
     status: 'planned',
     tagline: 'Learn Regenerative Principles',
-    description: 'An online learning platform teaching regenerative development principles, with certification paths and direct connections to the ChoZen ecosystem.',
+    description: 'Online courses that can live on FoC and/or ChoZen platforms, also taught externally as lead generation. Certification paths and direct connections to the ecosystem.',
     location: 'Digital',
     metrics: [
       { label: 'Format', value: 'Online Learning' },
@@ -251,7 +259,7 @@ export const entities: Entity[] = [
       'Certification management',
       'Alumni engagement',
     ],
-    connections: ['cho-ventures', 'book-platform', 'chozen-community', 'chozen-retreat'],
+    connections: ['cho-ventures', 'book-platform', 'chozen-ip', 'chozen-ccrl'],
     icon: 'graduation',
   },
   {
@@ -261,7 +269,7 @@ export const entities: Entity[] = [
     category: 'authority',
     status: 'active',
     tagline: 'Thought Leadership Engine',
-    description: 'Tony\'s speaking engagements, podcast appearances, and media presence amplifying the regenerative development message globally.',
+    description: 'Thought leadership spokesperson role across regenerative living + development. Speaking engagements, podcast appearances, and media presence amplifying the message globally.',
     location: 'Global',
     metrics: [
       { label: 'Engagements', value: '24+/Year' },
@@ -285,11 +293,12 @@ export const entities: Entity[] = [
     shortName: 'CFF',
     category: 'philanthropy',
     status: 'active',
-    tagline: 'Environmental & Cultural Impact',
-    description: 'A 501(c)(3) foundation supporting environmental conservation, wildlife protection, and indigenous culture preservation.',
+    entityType: 'daf',
+    tagline: 'Donor-Advised Fund',
+    description: 'A Donor-Advised Fund (DAF) supporting environmental conservation, wildlife protection, and indigenous culture preservation.',
     location: 'Miami, FL',
     metrics: [
-      { label: 'Type', value: '501(c)(3)' },
+      { label: 'Type', value: 'DAF' },
       { label: 'Focus', value: 'Environment & Culture' },
       { label: 'Programs', value: 'Multiple' },
       { label: 'Impact', value: 'Growing' },
@@ -301,23 +310,24 @@ export const entities: Entity[] = [
       'Donor communication personalization',
       'Program-donor matching',
     ],
-    connections: ['cho-ventures', 'm1-fund', 'climate-hub'],
+    connections: ['cho-ventures', 'climate-hub', 'ximena-legacy-fund', 'friends-of-phxjax'],
     icon: 'heart',
   },
   {
-    id: 'm1-fund',
-    name: 'M1 Community Fund',
-    shortName: 'M1F',
+    id: 'ximena-legacy-fund',
+    name: 'Ximena Cho Legacy Fund',
+    shortName: 'XCLF',
     category: 'philanthropy',
     status: 'active',
-    tagline: 'Community Relief & Support',
-    description: 'A donor-advised fund providing community relief, small business support, and local impact in underserved Miami neighborhoods.',
+    entityType: 'daf',
+    tagline: 'Legacy Philanthropic Fund',
+    description: 'A Donor-Advised Fund (DAF) honoring the Ximena Cho legacy through targeted philanthropic investments in community development and cultural preservation.',
     location: 'Miami, FL',
     metrics: [
-      { label: 'Type', value: 'Donor-Advised Fund' },
-      { label: 'Focus', value: 'Community Relief' },
-      { label: 'Support', value: 'Small Business' },
-      { label: 'Area', value: 'Local Miami' },
+      { label: 'Type', value: 'DAF' },
+      { label: 'Focus', value: 'Legacy Impact' },
+      { label: 'Programs', value: 'Community & Culture' },
+      { label: 'Impact', value: 'Growing' },
     ],
     aiApplications: [
       'Grant tracking and management',
@@ -327,6 +337,32 @@ export const entities: Entity[] = [
       'Success story generation',
     ],
     connections: ['cho-ventures', 'cho-foundation'],
+    icon: 'heart',
+  },
+  {
+    id: 'friends-of-phxjax',
+    name: 'Friends of PHXJAX',
+    shortName: 'FoP',
+    category: 'philanthropy',
+    status: 'active',
+    entityType: 'nonprofit',
+    tagline: 'Community Arts Nonprofit',
+    description: 'A 501(c)(3) nonprofit supporting the PHXJAX community through programs including Bloom Labs and Spring Mural Jam. Drives arts, culture, and community engagement in the district.',
+    location: 'Jacksonville, FL',
+    metrics: [
+      { label: 'Type', value: '501(c)(3)' },
+      { label: 'Programs', value: 'Bloom Labs, Mural Jam' },
+      { label: 'Focus', value: 'Arts & Community' },
+      { label: 'Impact', value: 'Local' },
+    ],
+    aiApplications: [
+      'Event marketing and outreach',
+      'Community engagement tracking',
+      'Impact story generation',
+      'Volunteer coordination',
+      'Grant application support',
+    ],
+    connections: ['cho-ventures', 'phx-jax', 'cho-foundation'],
     icon: 'handshake',
   },
 ];
@@ -337,35 +373,40 @@ export const connections: Connection[] = [
   { id: 'hub-foc', source: 'cho-ventures', target: 'future-of-cities', type: 'primary', bidirectional: true },
   { id: 'hub-phx', source: 'cho-ventures', target: 'phx-jax', type: 'primary', bidirectional: true },
   { id: 'hub-climate', source: 'cho-ventures', target: 'climate-hub', type: 'primary', bidirectional: true },
-  { id: 'hub-retreat', source: 'cho-ventures', target: 'chozen-retreat', type: 'primary', bidirectional: true },
-  { id: 'hub-community', source: 'cho-ventures', target: 'chozen-community', type: 'primary', bidirectional: true },
+  { id: 'hub-ccrl', source: 'cho-ventures', target: 'chozen-ccrl', type: 'primary', bidirectional: true },
+  { id: 'hub-czip', source: 'cho-ventures', target: 'chozen-ip', type: 'primary', bidirectional: true },
   { id: 'hub-book', source: 'cho-ventures', target: 'book-platform', type: 'primary', bidirectional: true },
   { id: 'hub-course', source: 'cho-ventures', target: 'course-platform', type: 'primary', bidirectional: true },
   { id: 'hub-speaking', source: 'cho-ventures', target: 'speaking-media', type: 'primary', bidirectional: true },
   { id: 'hub-foundation', source: 'cho-ventures', target: 'cho-foundation', type: 'primary', bidirectional: true },
-  { id: 'hub-m1fund', source: 'cho-ventures', target: 'm1-fund', type: 'primary', bidirectional: true },
+  { id: 'hub-ximena', source: 'cho-ventures', target: 'ximena-legacy-fund', type: 'primary', bidirectional: true },
+  { id: 'hub-fop', source: 'cho-ventures', target: 'friends-of-phxjax', type: 'primary', bidirectional: true },
 
   // Real estate cluster
-  { id: 'm1-foc', source: 'metro-1', target: 'future-of-cities', type: 'secondary', bidirectional: true },
+  { id: 'm1-foc', source: 'metro-1', target: 'future-of-cities', type: 'services', label: 'Commercial Brokerage Support', bidirectional: true },
   { id: 'm1-climate', source: 'metro-1', target: 'climate-hub', type: 'secondary', bidirectional: true },
   { id: 'foc-phx', source: 'future-of-cities', target: 'phx-jax', type: 'secondary', bidirectional: true },
   { id: 'foc-climate', source: 'future-of-cities', target: 'climate-hub', type: 'secondary', bidirectional: true },
 
   // Regenerative cluster
-  { id: 'retreat-community', source: 'chozen-retreat', target: 'chozen-community', type: 'secondary', bidirectional: true },
-  { id: 'retreat-course', source: 'chozen-retreat', target: 'course-platform', type: 'secondary', bidirectional: true },
+  { id: 'ccrl-czip', source: 'chozen-ccrl', target: 'chozen-ip', type: 'ip-licensing', label: 'Brand & Platform License', bidirectional: true },
+  { id: 'ccrl-course', source: 'chozen-ccrl', target: 'course-platform', type: 'secondary', bidirectional: true },
+  { id: 'foc-ccrl', source: 'future-of-cities', target: 'chozen-ccrl', type: 'platform', label: 'ChoZen as FoC Program', bidirectional: true },
+  { id: 'foc-czip', source: 'future-of-cities', target: 'chozen-ip', type: 'secondary', label: 'IP Boundary', bidirectional: true },
 
   // Authority cluster
   { id: 'book-course', source: 'book-platform', target: 'course-platform', type: 'secondary', bidirectional: true },
   { id: 'book-speaking', source: 'book-platform', target: 'speaking-media', type: 'secondary', bidirectional: true },
-  { id: 'course-community', source: 'course-platform', target: 'chozen-community', type: 'secondary', bidirectional: true },
+  { id: 'course-czip', source: 'course-platform', target: 'chozen-ip', type: 'secondary', bidirectional: true },
 
   // Philanthropy cluster
-  { id: 'foundation-m1fund', source: 'cho-foundation', target: 'm1-fund', type: 'secondary', bidirectional: true },
+  { id: 'foundation-ximena', source: 'cho-foundation', target: 'ximena-legacy-fund', type: 'secondary', bidirectional: true },
+  { id: 'foundation-fop', source: 'cho-foundation', target: 'friends-of-phxjax', type: 'secondary', bidirectional: true },
   { id: 'foundation-climate', source: 'cho-foundation', target: 'climate-hub', type: 'secondary', bidirectional: true },
+  { id: 'phx-fop', source: 'phx-jax', target: 'friends-of-phxjax', type: 'primary', bidirectional: true },
 
   // Cross-cluster data flows
-  { id: 'retreat-book', source: 'chozen-retreat', target: 'book-platform', type: 'data-flow', label: 'Content', bidirectional: false },
+  { id: 'ccrl-book', source: 'chozen-ccrl', target: 'book-platform', type: 'data-flow', label: 'Content', bidirectional: false },
 ];
 
 export const categoryLabels: Record<EntityCategory, string> = {

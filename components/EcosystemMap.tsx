@@ -132,13 +132,17 @@ export default function EcosystemMap() {
       const sourceColor = sourceEntity ? categoryColorMap[sourceEntity.category] : '#666';
       const conn = connections.find((c) => c.id === edge.id);
 
+      const connType = conn?.type;
+      const isDashed = connType === 'services' || connType === 'platform' || connType === 'ip-licensing';
+
       return {
         ...edge,
-        animated: conn?.type === 'primary' && isHighlighted,
+        animated: (connType === 'primary' || connType === 'ip-licensing') && isHighlighted,
         style: {
           ...edge.style,
           stroke: isHighlighted ? sourceColor : `${sourceColor}25`,
-          strokeWidth: isHighlighted ? 2 : 1,
+          strokeWidth: isHighlighted ? (connType === 'ip-licensing' ? 2.5 : 2) : 1,
+          strokeDasharray: isDashed ? (connType === 'ip-licensing' ? '8 4' : '5 5') : undefined,
           opacity: selectedEntity ? (isHighlighted ? 1 : 0.15) : 0.6,
         },
       };

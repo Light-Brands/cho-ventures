@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Entity, EntityCategory, categoryLabels, entities } from '@/lib/ecosystem-data';
+import { Entity, EntityCategory, EntityType, categoryLabels, entities } from '@/lib/ecosystem-data';
 import {
   X,
   MapPin,
@@ -86,6 +86,14 @@ const iconMap: Record<string, React.ElementType> = {
   handshake: Handshake,
 };
 
+const entityTypeLabels: Record<EntityType, string> = {
+  'ip-holder': 'IP Holder',
+  'operating': 'Operating Entity',
+  'nonprofit': '501(c)(3) Nonprofit',
+  'daf': 'Donor-Advised Fund',
+  'development': 'Development',
+};
+
 export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanelProps) {
   const styles = categoryStyles[entity.category];
   const IconComponent = iconMap[entity.icon] || Sparkles;
@@ -138,23 +146,38 @@ export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanel
             </div>
           )}
 
-          {/* Status */}
-          {entity.status !== 'active' && (
-            <span className={`
-              mt-3 inline-flex items-center gap-1
-              text-[10px] font-medium uppercase tracking-wide
-              px-2 py-1 rounded
-              ${entity.status === 'planned' ? 'bg-authority/15 text-authority-light border border-authority/20' : 'bg-white/5 text-white/40 border border-white/10'}
-            `}>
-              {entity.status === 'planned' ? 'Coming Soon' : entity.status}
-            </span>
-          )}
+          {/* Status & Entity Type */}
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            {entity.status !== 'active' && (
+              <span className={`
+                inline-flex items-center gap-1
+                text-[10px] font-medium uppercase tracking-wide
+                px-2 py-1 rounded
+                ${entity.status === 'planned' ? 'bg-authority/15 text-authority-light border border-authority/20' : 'bg-white/5 text-white/40 border border-white/10'}
+              `}>
+                {entity.status === 'planned' ? 'Coming Soon' : entity.status}
+              </span>
+            )}
+            {entity.entityType && (
+              <span className="inline-flex items-center text-[10px] font-medium uppercase tracking-wide px-2 py-1 rounded bg-white/5 text-white/50 border border-white/10">
+                {entityTypeLabels[entity.entityType]}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {/* Description */}
           <p className="text-xs text-white/60 leading-relaxed">{entity.description}</p>
+
+          {/* Notes */}
+          {entity.notes && (
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-yellow-500/5 border border-yellow-500/15">
+              <span className="text-[10px] text-yellow-400/70 font-medium uppercase tracking-wider shrink-0">Note</span>
+              <p className="text-[11px] text-yellow-200/50 leading-relaxed">{entity.notes}</p>
+            </div>
+          )}
 
           {/* Metrics */}
           {entity.metrics && entity.metrics.length > 0 && (
