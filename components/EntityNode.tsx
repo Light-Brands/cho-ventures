@@ -17,6 +17,8 @@ import {
   Heart,
   Handshake,
   Sparkles,
+  User,
+  Globe,
 } from 'lucide-react';
 
 interface EntityNodeProps {
@@ -35,12 +37,12 @@ const categoryStyles: Record<EntityCategory, {
   text: string;
   ring: string;
 }> = {
-  hub: {
-    bg: 'bg-gradient-to-br from-hub/20 via-hub/10 to-transparent',
-    border: 'border-hub/40',
-    glow: 'shadow-[0_0_32px_rgba(168,85,247,0.35)]',
-    text: 'text-hub-light',
-    ring: 'ring-hub/40',
+  conglomerate: {
+    bg: 'bg-gradient-to-br from-conglomerate/20 via-conglomerate/10 to-transparent',
+    border: 'border-conglomerate/40',
+    glow: 'shadow-[0_0_32px_rgba(232,121,247,0.35)]',
+    text: 'text-conglomerate-light',
+    ring: 'ring-conglomerate/40',
   },
   'real-estate': {
     bg: 'bg-gradient-to-br from-real-estate/15 to-transparent',
@@ -70,6 +72,13 @@ const categoryStyles: Record<EntityCategory, {
     text: 'text-philanthropy-light',
     ring: 'ring-philanthropy/30',
   },
+  development: {
+    bg: 'bg-gradient-to-br from-development/15 to-transparent',
+    border: 'border-development/30',
+    glow: 'shadow-[0_0_24px_rgba(245,158,11,0.3)]',
+    text: 'text-development-light',
+    ring: 'ring-development/30',
+  },
 };
 
 const iconMap: Record<string, React.ElementType> = {
@@ -85,13 +94,16 @@ const iconMap: Record<string, React.ElementType> = {
   mic: Mic,
   heart: Heart,
   handshake: Handshake,
+  user: User,
+  globe: Globe,
 };
 
 function EntityNode({ data }: EntityNodeProps) {
   const { entity, isSelected, isHovered, isConnected } = data;
   const styles = categoryStyles[entity.category];
   const IconComponent = iconMap[entity.icon] || Sparkles;
-  const isHub = entity.category === 'hub';
+  const isConglomerate = entity.isConglomerate || entity.category === 'conglomerate';
+  const isDualAffiliated = entity.affiliation === 'both' && !entity.isConglomerate;
 
   return (
     <>
@@ -109,45 +121,45 @@ function EntityNode({ data }: EntityNodeProps) {
         transition={{ duration: 0.2, ease: 'easeOut' }}
         className={`
           relative cursor-pointer select-none
-          ${isHub ? 'w-44' : 'w-36'}
+          ${isConglomerate ? 'w-44' : 'w-36'}
           ${styles.bg}
           backdrop-blur-md
           border ${styles.border}
           rounded-xl
-          ${isHub ? 'p-4' : 'p-3'}
+          ${isConglomerate ? 'p-4' : 'p-3'}
           transition-shadow duration-200
           ${isSelected || isHovered ? styles.glow : ''}
           ${isSelected ? `ring-1 ${styles.ring}` : ''}
         `}
       >
-        {/* Hub gradient ring */}
-        {isHub && (
-          <div className="absolute -inset-px rounded-xl bg-gradient-to-br from-hub/30 via-transparent to-hub/10 -z-10" />
+        {/* Conglomerate gradient ring */}
+        {isConglomerate && (
+          <div className="absolute -inset-px rounded-xl bg-gradient-to-br from-conglomerate/30 via-transparent to-conglomerate/10 -z-10" />
         )}
 
         <div className="relative z-10 flex flex-col">
           {/* Icon */}
           <div className={`
-            ${isHub ? 'w-11 h-11 mb-2.5 mx-auto' : 'w-8 h-8 mb-2'}
+            ${isConglomerate ? 'w-11 h-11 mb-2.5 mx-auto' : 'w-8 h-8 mb-2'}
             rounded-lg
             ${styles.bg}
             border ${styles.border}
             flex items-center justify-center
           `}>
-            <IconComponent className={`${isHub ? 'w-5 h-5' : 'w-4 h-4'} ${styles.text}`} />
+            <IconComponent className={`${isConglomerate ? 'w-5 h-5' : 'w-4 h-4'} ${styles.text}`} />
           </div>
 
           {/* Name */}
           <h3 className={`
-            ${isHub ? 'text-sm text-center' : 'text-xs'}
+            ${isConglomerate ? 'text-sm text-center' : 'text-xs'}
             font-semibold text-white/90
             leading-tight truncate
           `}>
             {entity.name}
           </h3>
 
-          {/* Tagline - hub only */}
-          {isHub && (
+          {/* Tagline - conglomerate only */}
+          {isConglomerate && (
             <p className="text-[10px] text-white/40 text-center mt-1 line-clamp-1">
               {entity.tagline}
             </p>
@@ -178,6 +190,13 @@ function EntityNode({ data }: EntityNodeProps) {
         `}>
           {entity.connections.length}
         </div>
+
+        {/* Dual-affiliation indicator dot */}
+        {isDualAffiliated && (
+          <div className="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full bg-gradient-to-br from-conglomerate to-ai-layer border border-white/20 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
+          </div>
+        )}
       </motion.div>
     </>
   );

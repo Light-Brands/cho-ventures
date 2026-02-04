@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Network, Box, FileText } from 'lucide-react';
 import Link from 'next/link';
 import LockScreen from '@/components/LockScreen';
+import { entities } from '@/lib/ecosystem-data';
 
 // Flickering code-style text reveal component
 function FlickeringText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -168,16 +169,16 @@ export default function Home() {
 
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cho-slate/50 border border-cho-steel/30">
               <Network className="w-3 h-3 text-white/40" />
-              <span className="text-[11px] text-white/50">13 Entities</span>
+              <span className="text-[11px] text-white/50">{entities.length} Entities</span>
             </div>
 
             {/* Toggle to 3D version */}
             <Link
               href="/v2"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-hub/20 border border-hub/30 hover:bg-hub/30 transition-colors"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-conglomerate/20 border border-conglomerate/30 hover:bg-conglomerate/30 transition-colors"
             >
-              <Box className="w-3 h-3 text-hub-light" />
-              <span className="text-[11px] text-hub-light font-medium">3D</span>
+              <Box className="w-3 h-3 text-conglomerate-light" />
+              <span className="text-[11px] text-conglomerate-light font-medium">3D</span>
             </Link>
           </div>
         </div>

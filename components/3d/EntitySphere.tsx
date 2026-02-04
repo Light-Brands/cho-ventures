@@ -7,13 +7,13 @@ import * as THREE from 'three';
 import { Entity, EntityCategory } from '@/lib/ecosystem-data';
 import SphereShaderMaterial from './SphereShaderMaterial';
 
-// Category colors matching the existing palette
 const categoryColors: Record<EntityCategory, { main: string; glow: string }> = {
-  hub: { main: '#A855F7', glow: '#C084FC' },
+  conglomerate: { main: '#E879F7', glow: '#F0ABFC' },
   'real-estate': { main: '#3B82F6', glow: '#60A5FA' },
   regenerative: { main: '#14B8A6', glow: '#2DD4BF' },
   authority: { main: '#0EA5E9', glow: '#38BDF8' },
   philanthropy: { main: '#6366F1', glow: '#818CF8' },
+  development: { main: '#F59E0B', glow: '#FBBF24' },
 };
 
 interface EntitySphereProps {
@@ -25,8 +25,6 @@ interface EntitySphereProps {
   onHover: (entity: Entity | null) => void;
   onClick: (entity: Entity) => void;
 }
-
-
 
 export default function EntitySphere({
   entity,
@@ -42,33 +40,26 @@ export default function EntitySphere({
   const [localHover, setLocalHover] = useState(false);
 
   const colors = categoryColors[entity.category];
-  const isHub = entity.category === 'hub';
-  const baseSize = isHub ? 0.8 : 0.5;
+  const isConglomerate = entity.isConglomerate || entity.category === 'conglomerate';
+  const baseSize = isConglomerate ? 0.8 : 0.5;
 
-  // Target scale based on state
   const targetScale = useMemo(() => {
     if (isSelected) return 1.15;
     if (isHovered || localHover) return 1.08;
     return 1;
   }, [isSelected, isHovered, localHover]);
 
-  // Animate the sphere
   useFrame((state, delta) => {
     if (!meshRef.current) return;
 
-    // Smooth scale transition
     const currentScale = meshRef.current.scale.x;
     const newScale = THREE.MathUtils.lerp(currentScale, targetScale, delta * 8);
     meshRef.current.scale.setScalar(newScale);
 
-    // Floating animation for all entities
     if (groupRef.current) {
       const floatOffset = Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.05;
       groupRef.current.position.y = position[1] + floatOffset;
     }
-
-    // Opacity and glow transitions are now handled by shader uniforms
-    // The shader material will handle these transitions internally
   });
 
   const handlePointerOver = (e: { stopPropagation: () => void }) => {
@@ -91,7 +82,6 @@ export default function EntitySphere({
 
   return (
     <group ref={groupRef} position={position}>
-      {/* Main sphere - clean, no halos */}
       <mesh
         ref={meshRef}
         onPointerOver={handlePointerOver}
@@ -106,12 +96,10 @@ export default function EntitySphere({
           opacity={1.0}
           isSelected={isSelected}
           isHovered={isHovered || localHover}
-          isHub={isHub}
+          isConglomerate={isConglomerate}
         />
       </mesh>
 
-
-      {/* Entity label - always fully visible and optimized */}
       <Html
         center
         distanceFactor={12}
@@ -151,7 +139,6 @@ export default function EntitySphere({
         </div>
       </Html>
 
-      {/* Detailed tooltip on hover - improved */}
       {(isHovered || localHover) && !isSelected && (
         <Html
           center

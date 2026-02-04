@@ -10,80 +10,71 @@ import ConnectionBeam from './3d/ConnectionBeam';
 import CameraController from './3d/CameraController';
 import AmbientEffects from './3d/AmbientEffects';
 import Starfield from './3d/Starfield';
+// AILayerBridge removed - replaced by AI System entity
 import EntityDetailPanel from './EntityDetailPanel';
 
-// Category colors for legend
 const categoryColorMap: Record<EntityCategory, string> = {
-  hub: '#A855F7',
+  conglomerate: '#E879F7',
   'real-estate': '#3B82F6',
   regenerative: '#14B8A6',
   authority: '#0EA5E9',
   philanthropy: '#6366F1',
+  development: '#F59E0B',
 };
 
-// Calculate 3D positions - hub at center, others uniformly distributed
-function calculate3DPositions(): Record<string, [number, number, number]> {
+// Hierarchy: AI System at top → two conglomerates → children in circles below
+function calculateDual3DPositions(): Record<string, [number, number, number]> {
   const positions: Record<string, [number, number, number]> = {};
 
-  // Hub at center
-  positions['cho-ventures'] = [0, 0, 0];
+  // AI Superintelligent System at top center
+  positions['ai-system'] = [0, 4, 0];
 
-  // Get all non-hub entities
-  const nonHubEntities = entities.filter((entity) => entity.id !== 'cho-ventures');
-  const entityCount = nonHubEntities.length;
+  // Conglomerates below AI system, spread left and right
+  positions['cho-ventures'] = [-7, 1.5, 0];
+  positions['future-of-cities'] = [7, 1.5, 0];
 
-  if (entityCount === 0) return positions;
+  // CV entities - ordered by cluster: real-estate/philanthropy (near center), regenerative, authority (outer)
+  const cvOnlyIds = ['metro-1', 'cho-foundation', 'ximena-legacy-fund', 'chozen-ip', 'course-platform', 'book-platform', 'speaking-media', 'tony-cho-brand'];
+  const cvCenter: [number, number, number] = [-7, -1.5, 0];
+  const cvRadius = 5;
 
-  // Uniform radius for all entities
-  const baseRadius = 6.0;
+  cvOnlyIds.forEach((id, index) => {
+    const startAngle = -Math.PI * 0.15;
+    const endAngle = Math.PI * 1.15;
+    const angle = startAngle + (index / (cvOnlyIds.length - 1)) * (endAngle - startAngle);
+    positions[id] = [
+      cvCenter[0] + Math.cos(angle) * cvRadius,
+      cvCenter[1] + Math.sin(angle) * 0.5,
+      cvCenter[2] + Math.sin(angle) * cvRadius * 0.6,
+    ];
+  });
 
-  // Use Fibonacci sphere algorithm for uniform distribution
-  // This creates evenly spaced points on a sphere
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle in radians
+  // FoC-only entities - below Future of Cities
+  positions['foc-portugal'] = [7, -2, 3];
 
-  nonHubEntities.forEach((entity, index) => {
-    // Handle single entity case
-    if (entityCount === 1) {
-      positions[entity.id] = [baseRadius, 0, 0];
-      return;
-    }
-
-    // Calculate uniform spherical coordinates using Fibonacci sphere
-    const y = 1 - (index / (entityCount - 1)) * 2; // y goes from 1 to -1
-    const radiusAtY = Math.sqrt(1 - y * y); // Radius at y for sphere
-    
-    const theta = goldenAngle * index; // Golden angle increment
-    
-    // Convert to 3D position
-    const x = Math.cos(theta) * radiusAtY;
-    const z = Math.sin(theta) * radiusAtY;
-    
-    // Apply base radius with slight vertical flattening for better visibility
-    const verticalScale = 0.7; // Flatten sphere slightly for better view
-    const finalY = y * baseRadius * verticalScale;
-    const finalRadius = baseRadius * Math.sqrt(1 - y * y * (verticalScale * verticalScale));
-    
-    positions[entity.id] = [
-      x * finalRadius,
-      finalY,
-      z * finalRadius,
+  // Shared entities - ordered to minimize crossing with CV arc
+  const sharedIds = ['climate-hub', 'phx-jax', 'friends-of-phxjax', 'chozen-ccrl'];
+  sharedIds.forEach((id, index) => {
+    const t = index / (sharedIds.length - 1);
+    positions[id] = [
+      0,
+      -0.5 - t * 3,
+      -2 + t * 4,
     ];
   });
 
   return positions;
 }
 
-// Loading component
 function LoadingFallback() {
   return (
     <mesh>
       <sphereGeometry args={[0.5, 32, 32]} />
-      <meshBasicMaterial color="#A855F7" transparent opacity={0.5} />
+      <meshBasicMaterial color="#E879F7" transparent opacity={0.5} />
     </mesh>
   );
 }
 
-// 3D Scene content
 function Scene({
   selectedEntity,
   hoveredEntity,
@@ -106,40 +97,34 @@ function Scene({
 
   return (
     <>
-      {/* Enhanced realistic lighting setup */}
       <ambientLight intensity={0.3} color="#1a1a2e" />
-      
-      {/* Main key light - warm white */}
+
       <directionalLight
         position={[10, 10, 5]}
         intensity={0.8}
         color="#ffffff"
         castShadow={false}
       />
-      
-      {/* Fill lights with category colors for atmosphere */}
-      <pointLight position={[10, 8, 10]} intensity={0.6} color="#A855F7" distance={20} decay={2} />
+
+      <pointLight position={[10, 8, 10]} intensity={0.6} color="#E879F7" distance={20} decay={2} />
       <pointLight position={[-10, 8, -10]} intensity={0.5} color="#3B82F6" distance={20} decay={2} />
       <pointLight position={[0, 12, 0]} intensity={0.4} color="#14B8A6" distance={25} decay={2} />
       <pointLight position={[-8, -5, 8]} intensity={0.3} color="#6366F1" distance={18} decay={2} />
-      
-      {/* Rim lighting for depth */}
+      <pointLight position={[0, 5, 0]} intensity={0.3} color="#818CF8" distance={15} decay={2} />
+
       <directionalLight
         position={[-5, -5, -5]}
         intensity={0.4}
         color="#0EA5E9"
       />
-      
-      {/* Environment for realistic reflections */}
+
       <Environment preset="night" />
 
-      {/* Camera controls */}
       <CameraController
         targetPosition={targetPosition}
         autoRotate={!selectedEntity && !hoveredEntity}
       />
 
-      {/* Background effects */}
       <Starfield count={600} radius={45} />
       <AmbientEffects particleCount={100} />
 
@@ -202,7 +187,7 @@ export default function EcosystemMap3D() {
   const [hoveredEntity, setHoveredEntity] = useState<Entity | null>(null);
   const [focusedCategory, setFocusedCategory] = useState<EntityCategory | null>(null);
 
-  const positions = useMemo(() => calculate3DPositions(), []);
+  const positions = useMemo(() => calculateDual3DPositions(), []);
 
   const handleEntityHover = useCallback((entity: Entity | null) => {
     setHoveredEntity(entity);
@@ -226,9 +211,8 @@ export default function EcosystemMap3D() {
 
   return (
     <div className="relative w-full h-full">
-      {/* WebGL Canvas */}
       <Canvas
-        camera={{ position: [0, 5, 15], fov: 50 }}
+        camera={{ position: [0, 8, 24], fov: 50 }}
         gl={{
           antialias: true,
           alpha: true,
@@ -249,7 +233,6 @@ export default function EcosystemMap3D() {
         </Suspense>
       </Canvas>
 
-      {/* Detail Panel - reusing existing component */}
       <AnimatePresence>
         {selectedEntity && (
           <EntityDetailPanel
@@ -259,7 +242,7 @@ export default function EcosystemMap3D() {
         )}
       </AnimatePresence>
 
-      {/* Minimal Legend */}
+      {/* Legend */}
       <motion.div
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -268,11 +251,12 @@ export default function EcosystemMap3D() {
       >
         <div className="flex flex-col gap-3">
           {[
-            { label: 'Hub', color: 'bg-hub', category: 'hub' as EntityCategory },
+            { label: 'Conglomerate', color: 'bg-conglomerate', category: 'conglomerate' as EntityCategory },
             { label: 'Real Estate', color: 'bg-real-estate', category: 'real-estate' as EntityCategory },
             { label: 'Regenerative', color: 'bg-regenerative', category: 'regenerative' as EntityCategory },
             { label: 'Authority', color: 'bg-authority', category: 'authority' as EntityCategory },
             { label: 'Philanthropy', color: 'bg-philanthropy', category: 'philanthropy' as EntityCategory },
+            { label: 'Development', color: 'bg-development', category: 'development' as EntityCategory },
           ].map((item) => (
             <div
               key={item.label}
@@ -289,7 +273,7 @@ export default function EcosystemMap3D() {
         </div>
       </motion.div>
 
-      {/* Controls hint - fully centered at bottom */}
+      {/* Controls hint */}
       <div className="absolute bottom-6 left-0 right-0 flex items-center justify-center pointer-events-none">
         <motion.div
           initial={{ opacity: 0, y: 10 }}

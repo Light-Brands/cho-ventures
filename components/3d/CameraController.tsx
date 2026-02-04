@@ -26,7 +26,7 @@ export default function CameraController({
   // Initial camera setup
   useEffect(() => {
     if (!initialSetupDone.current) {
-      camera.position.set(0, 5, 15);
+      camera.position.set(0, 8, 24);
       camera.lookAt(0, 0, 0);
       initialSetupDone.current = true;
       onCameraReady?.();
@@ -82,7 +82,7 @@ export default function CameraController({
       autoRotate={autoRotate && !targetPosition}
       autoRotateSpeed={0.3}
       minDistance={5}
-      maxDistance={30}
+      maxDistance={40}
       minPolarAngle={Math.PI / 6}
       maxPolarAngle={Math.PI / 1.5}
       dampingFactor={0.05}

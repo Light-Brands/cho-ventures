@@ -14,7 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { entities, connections, Entity, EntityCategory } from '@/lib/ecosystem-data';
+import { entities, connections, Entity, EntityCategory, aiLayerConfig } from '@/lib/ecosystem-data';
 import EntityNode from './EntityNode';
 import EntityDetailPanel from './EntityDetailPanel';
 
@@ -22,40 +22,84 @@ const nodeTypes = {
   entity: EntityNode,
 };
 
-// Cohesive color palette - purple hub with blue/teal spectrum
 const categoryColorMap: Record<EntityCategory, string> = {
-  hub: '#A855F7',
+  conglomerate: '#E879F7',
   'real-estate': '#3B82F6',
   regenerative: '#14B8A6',
   authority: '#0EA5E9',
   philanthropy: '#6366F1',
+  development: '#F59E0B',
 };
 
-// Calculate node positions with proper spacing
-function calculateNodePositions(): Record<string, { x: number; y: number }> {
+const roleLineStyles: Record<string, string | undefined> = {
+  investor: undefined, // solid
+  donor: '8 4',
+  developer: undefined, // solid thick
+  'in-kind-donor': '4 4',
+  authority: '12 4',
+  parent: undefined,
+};
+
+// Hierarchy: AI System at top → two conglomerates → children in circles below
+function calculateDualLayoutPositions(): Record<string, { x: number; y: number }> {
   const positions: Record<string, { x: number; y: number }> = {};
-  const centerX = 550;
-  const centerY = 380;
 
-  // Hub at center
-  positions['cho-ventures'] = { x: centerX - 88, y: centerY - 60 };
+  const centerX = 950;
 
-  // Get all non-hub entities
-  const nonHubEntities = entities.filter(e => e.id !== 'cho-ventures');
-  const nodeCount = nonHubEntities.length;
-  
-  // Calculate angle step for even distribution in a circle
-  const angleStep = (2 * Math.PI) / nodeCount;
-  const radius = 380; // Increased radius for better spacing
-  const nodeWidth = 144; // Average node width (w-36 = 144px)
-  const nodeHeight = 80; // Average node height
+  // --- AI Superintelligent System at top center ---
+  positions['ai-system'] = { x: centerX - 88, y: 40 };
 
-  // Position all nodes evenly in a circle
-  nonHubEntities.forEach((entity, index) => {
-    const angle = index * angleStep - Math.PI / 2; // Start from top (-π/2)
-    positions[entity.id] = {
-      x: centerX + Math.cos(angle) * radius - nodeWidth / 2,
-      y: centerY + Math.sin(angle) * radius - nodeHeight / 2,
+  // --- CHO Ventures (left) below AI system ---
+  const cvCenterX = 350;
+  const cvCenterY = 620;
+  positions['cho-ventures'] = { x: cvCenterX - 88, y: 240 };
+
+  // CV entities in semicircle, ordered by cluster affinity:
+  // Right side (near center shared entities): real-estate + philanthropy
+  // Bottom: regenerative (bridges to chozen-ccrl in center)
+  // Left side: authority cluster (self-contained)
+  const cvEntities = [
+    'metro-1',            // real-estate → climate-hub
+    'cho-foundation',     // philanthropy → climate-hub, friends-of-phxjax
+    'ximena-legacy-fund', // philanthropy → cho-foundation
+    'chozen-ip',          // regenerative → chozen-ccrl, course-platform
+    'course-platform',    // authority → chozen-ip, book, tony-cho
+    'book-platform',      // authority → course, speaking, tony-cho
+    'speaking-media',     // authority → book, tony-cho
+    'tony-cho-brand',     // authority → speaking, book, course
+  ];
+  const cvRadius = 380;
+
+  cvEntities.forEach((id, index) => {
+    const startAngle = -Math.PI * 0.1;
+    const endAngle = Math.PI * 1.1;
+    const angle = startAngle + (index / (cvEntities.length - 1)) * (endAngle - startAngle);
+    positions[id] = {
+      x: cvCenterX + Math.cos(angle) * cvRadius - 70,
+      y: cvCenterY + Math.sin(angle) * cvRadius * 0.65 - 40,
+    };
+  });
+
+  // --- Future of Cities (right) below AI system ---
+  const focCenterX = 1550;
+  positions['future-of-cities'] = { x: focCenterX - 88, y: 240 };
+
+  // FoC Portugal below parent
+  positions['foc-portugal'] = { x: focCenterX - 70, y: 480 };
+
+  // --- Shared entities (center column, ordered to minimize crossing) ---
+  // Top: climate-hub (connects to metro-1 + cho-foundation at top-right of CV arc)
+  // Then: phx-jax (connects to friends-of-phxjax below)
+  // Then: friends-of-phxjax (connects to cho-foundation + phx-jax above)
+  // Bottom: chozen-ccrl (connects to chozen-ip at bottom of CV arc)
+  const sharedEntities = ['climate-hub', 'phx-jax', 'friends-of-phxjax', 'chozen-ccrl'];
+  const sharedStartY = 340;
+  const sharedSpacing = 180;
+
+  sharedEntities.forEach((id, index) => {
+    positions[id] = {
+      x: centerX - 70,
+      y: sharedStartY + index * sharedSpacing,
     };
   });
 
@@ -69,9 +113,8 @@ export default function EcosystemMap() {
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const hasFittedView = useRef(false);
 
-  const positions = useMemo(() => calculateNodePositions(), []);
+  const positions = useMemo(() => calculateDualLayoutPositions(), []);
 
-      // Create base nodes once - positions don't change
   const baseNodes: Node[] = useMemo(() => {
     return entities.map((entity) => ({
       id: entity.id,
@@ -83,8 +126,6 @@ export default function EcosystemMap() {
     }));
   }, [positions]);
 
-  // Update nodes efficiently - only change what's needed
-  // Use deferred hover value to reduce flicker
   const nodes = useMemo(() => {
     return baseNodes.map((node) => ({
       ...node,
@@ -99,27 +140,33 @@ export default function EcosystemMap() {
     }));
   }, [baseNodes, selectedEntity, deferredHoveredEntity]);
 
-  // Create base edges once
   const baseEdges: Edge[] = useMemo(() => {
     return connections.map((conn) => {
       const sourceEntity = entities.find((e) => e.id === conn.source);
       const sourceColor = sourceEntity ? categoryColorMap[sourceEntity.category] : '#666';
+      const isBridge = conn.type === 'conglomerate-bridge';
+      const isDeveloper = conn.relationshipRole === 'developer';
 
       return {
         id: conn.id,
         source: conn.source,
         target: conn.target,
         type: 'default',
+        label: conn.relationshipRole ? conn.relationshipRole.replace('-', ' ') : undefined,
+        labelStyle: { fill: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 500, textTransform: 'uppercase' as const },
+        labelBgStyle: { fill: 'rgba(8,11,20,0.8)', fillOpacity: 0.8 },
+        labelBgPadding: [4, 2] as [number, number],
+        labelBgBorderRadius: 3,
         style: {
-          stroke: sourceColor,
+          stroke: isBridge ? aiLayerConfig.colors.primary : sourceColor,
+          strokeWidth: isBridge ? 3 : isDeveloper ? 2.5 : 1.5,
+          strokeDasharray: isBridge ? '12 6' : (conn.relationshipRole ? roleLineStyles[conn.relationshipRole] : undefined),
           transition: 'all 0.25s ease',
         },
       };
     });
   }, []);
 
-  // Update edges efficiently - only change what's needed
-  // Use deferred hover value to reduce flicker
   const edges = useMemo(() => {
     return baseEdges.map((edge) => {
       const isHighlighted = selectedEntity
@@ -131,19 +178,26 @@ export default function EcosystemMap() {
       const sourceEntity = entities.find((e) => e.id === edge.source);
       const sourceColor = sourceEntity ? categoryColorMap[sourceEntity.category] : '#666';
       const conn = connections.find((c) => c.id === edge.id);
+      const isBridge = conn?.type === 'conglomerate-bridge';
 
       const connType = conn?.type;
       const isDashed = connType === 'services' || connType === 'platform' || connType === 'ip-licensing';
 
       return {
         ...edge,
-        animated: (connType === 'primary' || connType === 'ip-licensing') && isHighlighted,
+        animated: isBridge || ((connType === 'primary' || connType === 'ip-licensing') && isHighlighted),
         style: {
           ...edge.style,
-          stroke: isHighlighted ? sourceColor : `${sourceColor}25`,
-          strokeWidth: isHighlighted ? (connType === 'ip-licensing' ? 2.5 : 2) : 1,
-          strokeDasharray: isDashed ? (connType === 'ip-licensing' ? '8 4' : '5 5') : undefined,
-          opacity: selectedEntity ? (isHighlighted ? 1 : 0.15) : 0.6,
+          stroke: isHighlighted
+            ? (isBridge ? aiLayerConfig.colors.light : sourceColor)
+            : isBridge
+              ? `${aiLayerConfig.colors.primary}60`
+              : `${sourceColor}25`,
+          strokeWidth: isHighlighted
+            ? (isBridge ? 4 : connType === 'ip-licensing' ? 2.5 : 2)
+            : (isBridge ? 2 : 1),
+          strokeDasharray: isBridge ? '12 6' : isDashed ? (connType === 'ip-licensing' ? '8 4' : '5 5') : (conn?.relationshipRole ? roleLineStyles[conn.relationshipRole] : undefined),
+          opacity: selectedEntity ? (isHighlighted ? 1 : 0.15) : isBridge ? 0.7 : 0.6,
         },
       };
     });
@@ -152,7 +206,6 @@ export default function EcosystemMap() {
   const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
   const [edgesState, setEdges, onEdgesChange] = useEdgesState(edges);
 
-  // Update nodes/edges when computed values change
   useEffect(() => {
     setNodes(nodes);
   }, [nodes, setNodes]);
@@ -161,12 +214,11 @@ export default function EcosystemMap() {
     setEdges(edges);
   }, [edges, setEdges]);
 
-  // Fit view once on mount
   const onInit = useCallback((instance: ReactFlowInstance) => {
     reactFlowInstance.current = instance;
     if (!hasFittedView.current) {
       setTimeout(() => {
-        instance.fitView({ padding: 0.2, duration: 400, maxZoom: 1 });
+        instance.fitView({ padding: 0.1, duration: 400, maxZoom: 0.75 });
         hasFittedView.current = true;
       }, 100);
     }
@@ -191,15 +243,14 @@ export default function EcosystemMap() {
     setSelectedEntity(null);
   }, []);
 
-  // Focus on nodes of a specific category
   const handleCategoryHover = useCallback((category: EntityCategory) => {
     if (!reactFlowInstance.current) return;
-    
+
     const categoryNodes = nodesState.filter((node) => {
       const entity = entities.find((e) => e.id === node.id);
       return entity?.category === category;
     });
-    
+
     if (categoryNodes.length > 0) {
       reactFlowInstance.current.fitView({
         nodes: categoryNodes,
@@ -210,22 +261,22 @@ export default function EcosystemMap() {
     }
   }, [nodesState]);
 
-  // Reset view to show all nodes
   const handleCategoryLeave = useCallback(() => {
     if (!reactFlowInstance.current) return;
     reactFlowInstance.current.fitView({
-      padding: 0.2,
+      padding: 0.15,
       duration: 500,
-      maxZoom: 1,
+      maxZoom: 0.9,
     });
   }, []);
 
   return (
     <div className="relative w-full h-full">
-      {/* Subtle background gradient */}
+      {/* Background gradients */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/3 w-[500px] h-[500px] bg-hub/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] bg-real-estate/4 rounded-full blur-[100px]" />
+        <div className="absolute top-1/4 left-1/5 w-[400px] h-[400px] bg-conglomerate/5 rounded-full blur-[120px]" />
+        <div className="absolute top-1/4 right-1/5 w-[400px] h-[400px] bg-conglomerate/4 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/3 left-1/2 -translate-x-1/2 w-[300px] h-[600px] bg-ai-layer/3 rounded-full blur-[100px]" />
       </div>
 
       <ReactFlow
@@ -242,7 +293,7 @@ export default function EcosystemMap() {
         connectionMode={ConnectionMode.Loose}
         minZoom={0.2}
         maxZoom={1.2}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.5 }}
         proOptions={{ hideAttribution: true }}
         nodesDraggable={false}
         nodesConnectable={false}
@@ -263,20 +314,22 @@ export default function EcosystemMap() {
         )}
       </AnimatePresence>
 
-      {/* Minimal Legend */}
+      {/* Legend */}
       <motion.div
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 }}
         className="absolute left-5 top-1/2 -translate-y-1/2 bg-cho-deep/80 backdrop-blur-sm rounded-lg border border-cho-steel/30 px-3 py-3"
       >
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
+          <div className="text-[8px] font-medium text-white/25 uppercase tracking-wider mb-1">Entity Types</div>
           {[
-            { label: 'Hub', color: 'bg-hub', category: 'hub' as EntityCategory },
+            { label: 'Conglomerate', color: 'bg-conglomerate', category: 'conglomerate' as EntityCategory },
             { label: 'Real Estate', color: 'bg-real-estate', category: 'real-estate' as EntityCategory },
             { label: 'Regenerative', color: 'bg-regenerative', category: 'regenerative' as EntityCategory },
             { label: 'Authority', color: 'bg-authority', category: 'authority' as EntityCategory },
             { label: 'Philanthropy', color: 'bg-philanthropy', category: 'philanthropy' as EntityCategory },
+            { label: 'Development', color: 'bg-development', category: 'development' as EntityCategory },
           ].map((item) => (
             <div
               key={item.label}
@@ -286,6 +339,25 @@ export default function EcosystemMap() {
             >
               <div className={`w-2 h-2 rounded-full ${item.color}`} />
               <span className="text-[10px] text-white/50">{item.label}</span>
+            </div>
+          ))}
+
+          <div className="w-full h-px bg-white/10 my-1" />
+          <div className="text-[8px] font-medium text-white/25 uppercase tracking-wider mb-1">Roles</div>
+          {[
+            { label: 'Investor', style: 'solid' },
+            { label: 'Donor', style: 'dashed' },
+            { label: 'Developer', style: 'solid-thick' },
+            { label: 'AI System', style: 'ai-bridge' },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5">
+              <div className="w-4 h-px relative">
+                {item.style === 'solid' && <div className="absolute inset-0 bg-white/40" />}
+                {item.style === 'dashed' && <div className="absolute inset-0 border-t border-dashed border-white/40" />}
+                {item.style === 'solid-thick' && <div className="absolute inset-0 bg-white/40 h-[2px]" />}
+                {item.style === 'ai-bridge' && <div className="absolute inset-0 border-t border-dashed border-ai-layer/60" />}
+              </div>
+              <span className="text-[10px] text-white/40">{item.label}</span>
             </div>
           ))}
         </div>

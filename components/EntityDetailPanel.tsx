@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Entity, EntityCategory, EntityType, categoryLabels, entities } from '@/lib/ecosystem-data';
+import { Entity, EntityCategory, EntityType, categoryLabels, entities, connections } from '@/lib/ecosystem-data';
 import {
   X,
   MapPin,
@@ -20,6 +20,9 @@ import {
   Handshake,
   Cpu,
   Link,
+  User,
+  Globe,
+  GitBranch,
 } from 'lucide-react';
 
 interface EntityDetailPanelProps {
@@ -34,12 +37,12 @@ const categoryStyles: Record<EntityCategory, {
   accent: string;
   gradientFrom: string;
 }> = {
-  hub: {
-    bg: 'bg-hub/10',
-    border: 'border-hub/25',
-    text: 'text-hub-light',
-    accent: 'text-hub',
-    gradientFrom: 'from-hub/15',
+  conglomerate: {
+    bg: 'bg-conglomerate/10',
+    border: 'border-conglomerate/25',
+    text: 'text-conglomerate-light',
+    accent: 'text-conglomerate',
+    gradientFrom: 'from-conglomerate/15',
   },
   'real-estate': {
     bg: 'bg-real-estate/10',
@@ -69,6 +72,13 @@ const categoryStyles: Record<EntityCategory, {
     accent: 'text-philanthropy',
     gradientFrom: 'from-philanthropy/15',
   },
+  development: {
+    bg: 'bg-development/10',
+    border: 'border-development/25',
+    text: 'text-development-light',
+    accent: 'text-development',
+    gradientFrom: 'from-development/15',
+  },
 };
 
 const iconMap: Record<string, React.ElementType> = {
@@ -84,6 +94,8 @@ const iconMap: Record<string, React.ElementType> = {
   mic: Mic,
   heart: Heart,
   handshake: Handshake,
+  user: User,
+  globe: Globe,
 };
 
 const entityTypeLabels: Record<EntityType, string> = {
@@ -92,6 +104,17 @@ const entityTypeLabels: Record<EntityType, string> = {
   'nonprofit': '501(c)(3) Nonprofit',
   'daf': 'Donor-Advised Fund',
   'development': 'Development',
+  'family-office': 'Family Office',
+  'personal-brand': 'Personal Brand',
+};
+
+const roleLabels: Record<string, string> = {
+  'investor': 'Investor',
+  'donor': 'Donor',
+  'developer': 'Developer',
+  'in-kind-donor': 'In-Kind Donor',
+  'authority': 'Authority',
+  'parent': 'Parent',
 };
 
 export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanelProps) {
@@ -101,6 +124,11 @@ export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanel
   const connectedEntities = entity.connections
     .map((id) => entities.find((e) => e.id === id))
     .filter(Boolean) as Entity[];
+
+  // Find connections with relationship roles for this entity
+  const entityConnections = connections.filter(
+    (c) => c.source === entity.id || c.target === entity.id
+  );
 
   return (
       <motion.div
@@ -125,6 +153,9 @@ export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanel
           <div className={`flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider ${styles.text} mb-3`}>
             <div className={`w-1.5 h-1.5 rounded-full ${styles.bg}`} />
             {categoryLabels[entity.category]}
+            {entity.affiliation === 'both' && (
+              <span className="ml-1 px-1.5 py-0.5 rounded bg-ai-layer/20 text-ai-layer-light text-[8px] border border-ai-layer/20">SHARED</span>
+            )}
           </div>
 
           {/* Icon + Title */}
@@ -179,6 +210,34 @@ export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanel
             </div>
           )}
 
+          {/* Conglomerate Roles */}
+          {entity.conglomerateRoles.length > 0 && (
+            <div>
+              <h3 className="text-[10px] font-medium text-white/35 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <GitBranch className="w-3 h-3" />
+                Conglomerate Roles
+              </h3>
+              <div className="space-y-2">
+                {entity.conglomerateRoles.map((role, i) => {
+                  const parentEntity = entities.find((e) => e.id === role.conglomerate);
+                  return (
+                    <div key={i} className="p-2.5 rounded-lg bg-white/[0.03] border border-white/5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-white/70">{parentEntity?.name || role.conglomerate}</span>
+                        <span className={`text-[9px] font-medium uppercase tracking-wide px-1.5 py-0.5 rounded ${styles.bg} ${styles.text} border ${styles.border}`}>
+                          {roleLabels[role.role] || role.role}
+                        </span>
+                      </div>
+                      {role.notes && (
+                        <p className="text-[10px] text-white/35 mt-1">{role.notes}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Metrics */}
           {entity.metrics && entity.metrics.length > 0 && (
             <div>
@@ -223,14 +282,23 @@ export default function EntityDetailPanel({ entity, onClose }: EntityDetailPanel
                 {connectedEntities.slice(0, 5).map((connected) => {
                   const connStyles = categoryStyles[connected.category];
                   const ConnIcon = iconMap[connected.icon] || Sparkles;
+                  // Find role for this connection
+                  const conn = entityConnections.find(
+                    (c) => c.source === connected.id || c.target === connected.id
+                  );
                   return (
                     <div key={connected.id} className="flex items-center gap-2.5 p-2 rounded-lg bg-white/[0.03] border border-white/5">
                       <div className={`w-7 h-7 rounded-md ${connStyles.bg} border ${connStyles.border} flex items-center justify-center`}>
                         <ConnIcon className={`w-3.5 h-3.5 ${connStyles.text}`} />
                       </div>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-xs font-medium text-white/80 truncate">{connected.name}</div>
-                        <div className="text-[10px] text-white/35">{categoryLabels[connected.category]}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-white/35">{categoryLabels[connected.category]}</span>
+                          {conn?.relationshipRole && (
+                            <span className="text-[9px] text-ai-layer-light/60 uppercase">{roleLabels[conn.relationshipRole]}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

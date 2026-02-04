@@ -17,12 +17,19 @@ const config: Config = {
           'steel': '#21262D',
           'muted': '#30363D',
         },
-        // Refined cohesive palette - Purple hub with blue/teal spectrum
+        // Conglomerate (replaces hub)
+        'conglomerate': {
+          DEFAULT: '#E879F7',
+          light: '#F0ABFC',
+          dark: '#C026D3',
+          glow: 'rgba(232, 121, 247, 0.5)',
+        },
+        // Keep hub as alias for any missed references
         'hub': {
-          DEFAULT: '#A855F7',
-          light: '#C084FC',
-          dark: '#7C3AED',
-          glow: 'rgba(168, 85, 247, 0.5)',
+          DEFAULT: '#E879F7',
+          light: '#F0ABFC',
+          dark: '#C026D3',
+          glow: 'rgba(232, 121, 247, 0.5)',
         },
         'real-estate': {
           DEFAULT: '#3B82F6',
@@ -48,6 +55,18 @@ const config: Config = {
           dark: '#4F46E5',
           glow: 'rgba(99, 102, 241, 0.4)',
         },
+        'development': {
+          DEFAULT: '#F59E0B',
+          light: '#FBBF24',
+          dark: '#D97706',
+          glow: 'rgba(245, 158, 11, 0.4)',
+        },
+        'ai-layer': {
+          DEFAULT: '#818CF8',
+          light: '#A5B4FC',
+          dark: '#6366F1',
+          glow: 'rgba(129, 140, 248, 0.4)',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -62,6 +81,8 @@ const config: Config = {
         'fade-in': 'fadeIn 0.4s ease-out',
         'slide-up': 'slideUp 0.4s ease-out',
         'spin-slow': 'spin 30s linear infinite',
+        'ai-pulse': 'aiPulse 3s ease-in-out infinite',
+        'ai-flow': 'aiFlow 8s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -71,6 +92,14 @@ const config: Config = {
         slideUp: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        aiPulse: {
+          '0%, 100%': { opacity: '0.4' },
+          '50%': { opacity: '0.8' },
+        },
+        aiFlow: {
+          '0%': { transform: 'translateY(100%)' },
+          '100%': { transform: 'translateY(-100%)' },
         },
       },
     },

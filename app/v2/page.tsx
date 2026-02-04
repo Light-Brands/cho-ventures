@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Network, Box, LayoutGrid, FileText } from 'lucide-react';
+import { entities } from '@/lib/ecosystem-data';
 
 // Flickering code-style text reveal component
 function FlickeringText({ text, delay = 0 }: { text: string; delay?: number }) {
@@ -58,7 +59,7 @@ const EcosystemMap3D = dynamic(() => import('@/components/EcosystemMap3D'), {
         />
         <div className="w-32 h-0.5 bg-white/10 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-hub/50 rounded-full"
+            className="h-full bg-conglomerate/50 rounded-full"
             initial={{ width: 0 }}
             animate={{ width: '100%' }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -108,7 +109,7 @@ export default function V2Page() {
               />
               <div className="w-40 h-0.5 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-hub/50 rounded-full"
+                  className="h-full bg-conglomerate/50 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -156,13 +157,13 @@ export default function V2Page() {
 
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cho-slate/50 border border-cho-steel/30">
               <Network className="w-3 h-3 text-white/40" />
-              <span className="text-[11px] text-white/50">12 Entities</span>
+              <span className="text-[11px] text-white/50">{entities.length} Entities</span>
             </div>
 
             {/* Version indicator */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-hub/20 border border-hub/30">
-              <Box className="w-3 h-3 text-hub-light" />
-              <span className="text-[11px] text-hub-light font-medium">3D</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-conglomerate/20 border border-conglomerate/30">
+              <Box className="w-3 h-3 text-conglomerate-light" />
+              <span className="text-[11px] text-conglomerate-light font-medium">3D</span>
             </div>
 
             {/* Toggle to 2D version */}

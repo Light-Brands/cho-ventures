@@ -48,13 +48,13 @@ export const executiveSummary = {
   },
   solution: {
     title: 'The Solution',
-    description: 'A comprehensive AI transformation that unifies the entire ecosystem:',
+    description: 'A dual-conglomerate architecture with an AI Communication Layer bridging Cho Ventures and Future of Cities:',
     layers: [
-      { name: 'Central Hub', items: ['Command Center', 'AI Orchestration', 'Unified CRM', 'Content Engine', 'Analytics'] },
-      { name: 'Entity Layer', items: ['Metro 1', 'Future of Cities', 'PHX-JAX', 'Climate HUB', 'CCRL', 'ChoZen IP', 'Foundations'] },
+      { name: 'Cho Ventures (Family Office)', items: ['Portfolio Management', 'Authority Platform', 'Philanthropic Arms', 'Tony Cho Personal Brand'] },
+      { name: 'AI Communication Layer', items: ['Cross-Conglomerate Intelligence', 'Unified CRM', 'Content Engine', 'Analytics Bridge', 'Shared Data'] },
+      { name: 'Future of Cities (Developer)', items: ['Regenerative Placemaking', 'Development Pipeline', 'PHX-JAX & HUB Projects', 'FoC Portugal'] },
       { name: 'Community Layer', items: ['ChoZen App', 'Member Portal', 'Events & Retreats', 'Learning Platform', 'Community Forums'] },
-      { name: 'Authority Layer', items: ['Book Launch', 'Course Platform', 'Speaking/Media', 'Newsletter'] },
-      { name: 'AI Layer', items: ['Lead Intelligence', 'Content Generation', 'Automation Engine', 'Personalization', 'Predictive Models'] },
+      { name: 'Authority Layer', items: ['Book Launch', 'Course Platform', 'Speaking/Media', 'Tony Cho Brand', 'Newsletter'] },
       { name: 'Data Layer', items: ['Unified Database', 'Cross-Entity Analytics', 'Community Insights', 'Impact Metrics'] },
     ],
   },
@@ -71,6 +71,8 @@ export const entityProfiles = [
   { entity: 'Cho Family Foundation', type: 'Donor-Advised Fund (DAF)', location: 'Miami', function: 'Environmental & cultural philanthropy' },
   { entity: 'Ximena Cho Legacy Fund', type: 'Donor-Advised Fund (DAF)', location: 'Miami', function: 'Legacy philanthropic investments, community development' },
   { entity: 'Friends of PHXJAX', type: '501(c)(3) Nonprofit', location: 'Jacksonville', function: 'Bloom Labs, Spring Mural Jam, arts & community engagement' },
+  { entity: 'Tony Cho Personal Brand', type: 'Personal Brand', location: 'Miami', function: 'Thought leadership, keynote speaking, media presence, authority positioning' },
+  { entity: 'Future of Cities Portugal', type: 'International Development', location: 'Portugal', function: 'European regenerative placemaking, international expansion pipeline' },
 ];
 
 export const unifiedStory = {

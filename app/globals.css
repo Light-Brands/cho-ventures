@@ -3,11 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --color-hub: #A855F7;
+  --color-conglomerate: #E879F7;
+  --color-hub: #E879F7;
   --color-real-estate: #3B82F6;
   --color-regenerative: #14B8A6;
   --color-authority: #0EA5E9;
   --color-philanthropy: #6366F1;
+  --color-development: #F59E0B;
+  --color-ai-layer: #818CF8;
 }
 
 html {
@@ -16,7 +19,7 @@ html {
 
 body {
   @apply bg-cho-midnight text-white antialiased;
-  background-image: radial-gradient(at 30% 30%, rgba(168, 85, 247, 0.04) 0px, transparent 50%);
+  background-image: radial-gradient(at 30% 30%, rgba(232, 121, 247, 0.04) 0px, transparent 50%);
 }
 
 /* Scrollbar */
