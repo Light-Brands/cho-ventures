@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { Lock, Delete } from 'lucide-react';
 
-const CORRECT_PIN = '8888';
+const CORRECT_PIN = '7788';
 
 // Flickering code-style text reveal component
 function FlickeringText({ text, delay = 0 }: { text: string; delay?: number }) {
